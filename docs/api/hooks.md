@@ -1,8 +1,12 @@
-# Hooks
+# Hooks API Reference
 
-## useAuth
+## Overview
 
-Main hook for authentication management.
+The hooks module provides React hooks for map management, layer creation, and interactive drawing functionality.
+
+## useMap
+
+Main hook for comprehensive Leaflet map management and interaction.
 
 ### Return
 

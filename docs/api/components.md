@@ -1,8 +1,8 @@
-# Components
+# Components API Reference
 
 ## Overview
 
-The components module provides React components for authentication and route protection.
+The components module provides React components for interactive map visualization and layer management using Leaflet.
 
 ## AuthProvider
 

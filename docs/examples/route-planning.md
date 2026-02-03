@@ -1,0 +1,445 @@
+# Route Planning
+
+Learn how to create interactive routes and navigation paths with distance calculations.
+
+## Interactive Route Drawing
+
+Use the built-in route drawing functionality:
+
+```tsx
+import React from 'react'
+import { useMap, Menu } from '@forgepack/leaflet'
+
+export const RouteDrawing = () => {
+  const {
+    map,
+    layers,
+    toggleFromMap,
+    addPolyline,
+    startDrawingRoute,
+    finishDrawingRoute,
+    cancelDrawingRoute,
+    isDrawingRoute,
+    routePoints
+  } = useMap()
+
+  return (
+    <div style={{ height: '100vh', position: 'relative' }}>
+      <div id="map" style={{ height: '100%', width: '100%' }} />
+      
+      {map && (
+        <Menu
+          map={map}
+          toggleFromMap={toggleFromMap}
+          addPolyline={addPolyline}
+          startDrawingRoute={startDrawingRoute}
+          finishDrawingRoute={finishDrawingRoute}
+          cancelDrawingRoute={cancelDrawingRoute}
+          isDrawingRoute={isDrawingRoute}
+          routePoints={routePoints}
+        />
+      )}
+
+      {/* Route drawing status */}
+      {isDrawingRoute && (
+        <div style={{
+          position: 'absolute',
+          top: 20,
+          right: 20,
+          background: '#3498db',
+          color: 'white',
+          padding: '15px',
+          borderRadius: '8px',
+          zIndex: 1000
+        }}>
+          <h4>Drawing Route</h4>
+          <p>Points: {routePoints.length}</p>
+          <p>{routePoints.length >= 2 ? 'Click Route button to finish' : 'Click on map to add points'}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+## Programmatic Route Creation
+
+Create routes from coordinate arrays with distance calculations:
+
+```tsx
+import React from 'react'
+import { useMap } from '@forgepack/leaflet'
+
+export const ProgrammaticRoutes = () => {
+  const { map, addPolyline, toggleFromMap } = useMap()
+
+  const createPortRoute = () => {
+    const route = [
+      L.latLng(-22.8956, -43.1844), // Rio Port
+      L.latLng(-23.0132, -43.3264), // Angra dos Reis
+      L.latLng(-23.9608, -46.3081), // Santos Port
+      L.latLng(-25.4195, -48.3830), // Paranaguá Port
+    ]
+    
+    const routeLayer = addPolyline(route)
+    toggleFromMap(routeLayer)
+    
+    // Fit map to show the entire route
+    if (map && routeLayer.getBounds) {
+      map.fitBounds(routeLayer.getBounds().pad(0.1))
+    }
+  }
+
+  const createCoastalRoute = () => {
+    const coastalPoints = [
+      L.latLng(-22.7, -42.0),   // Starting point
+      L.latLng(-22.8, -42.1),
+      L.latLng(-22.9, -42.3),
+      L.latLng(-23.0, -42.5),
+      L.latLng(-23.2, -42.8),
+      L.latLng(-23.5, -43.2),   // Ending point
+    ]
+    
+    const coastalLayer = addPolyline(coastalPoints)
+    toggleFromMap(coastalLayer)
+  }
+
+  const createMultiLegRoute = () => {
+    // Create multiple connected route segments
+    const leg1 = [
+      L.latLng(-22.8, -43.0),
+      L.latLng(-22.85, -43.05),
+      L.latLng(-22.9, -43.1)
+    ]
+    
+    const leg2 = [
+      L.latLng(-22.9, -43.1),
+      L.latLng(-22.95, -43.15),
+      L.latLng(-23.0, -43.2)
+    ]
+    
+    const leg1Layer = addPolyline(leg1)
+    const leg2Layer = addPolyline(leg2)
+    
+    toggleFromMap(leg1Layer)
+    toggleFromMap(leg2Layer)
+  }
+
+  return (
+    <div style={{ height: '100vh', position: 'relative' }}>
+      <div id="map" style={{ height: '100%', width: '100%' }} />
+      
+      {map && (
+        <div style={{
+          position: 'absolute',
+          top: 20,
+          right: 20,
+          zIndex: 1000,
+          background: 'white',
+          padding: '15px',
+          borderRadius: '8px',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px'
+        }}>
+          <h3>Route Examples</h3>
+          <button onClick={createPortRoute}>
+            Port-to-Port Route
+          </button>
+          <button onClick={createCoastalRoute}>
+            Coastal Navigation
+          </button>
+          <button onClick={createMultiLegRoute}>
+            Multi-Leg Journey
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+## Route from File Upload
+
+Create routes from uploaded coordinate files:
+
+```tsx
+import React from 'react'
+import { useMap, HandleInputFile } from '@forgepack/leaflet'
+
+export const FileRoutes = () => {
+  const { map, addPolyline, toggleFromMap } = useMap()
+
+  const handleRouteFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (map) {
+      const coordinates = await HandleInputFile({
+        event,
+        map,
+        toggleFromMap,
+        addPolyline
+      })
+      
+      console.log(`Route created with ${coordinates.length} waypoints`)
+    }
+  }
+
+  return (
+    <div style={{ height: '100vh', position: 'relative' }}>
+      <div id="map" style={{ height: '100%', width: '100%' }} />
+      
+      {map && (
+        <div style={{
+          position: 'absolute',
+          top: 20,
+          right: 20,
+          zIndex: 1000,
+          background: 'white',
+          padding: '15px',
+          borderRadius: '8px',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          <h3>Upload Route</h3>
+          <p>Select a file with waypoint coordinates:</p>
+          <input
+            type="file"
+            accept=".txt,.csv,.gpx"
+            onChange={handleRouteFile}
+            style={{ marginTop: '10px' }}
+          />
+          <div style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
+            <strong>File format:</strong><br />
+            One coordinate per line: lat lng<br />
+            Example:<br />
+            -22.8 -43.0<br />
+            -22.85 -43.05<br />
+            -22.9 -43.1
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+## Advanced Route Features
+
+### Route with Custom Styling
+
+```tsx
+import React from 'react'
+import { useMap } from '@forgepack/leaflet'
+import * as L from 'leaflet'
+
+export const StyledRoutes = () => {
+  const { map, createLayer, toggleFromMap } = useMap()
+
+  const createStyledRoute = () => {
+    const routePoints = [
+      L.latLng(-22.8, -43.0),
+      L.latLng(-22.85, -43.05),
+      L.latLng(-22.9, -43.1)
+    ]
+    
+    // Create custom styled polyline
+    const styledRoute = L.polyline(
+      routePoints.map(p => [p.lat, p.lng]),
+      {
+        color: '#e74c3c',
+        weight: 6,
+        opacity: 0.8,
+        dashArray: '10, 5',
+        lineCap: 'round',
+        lineJoin: 'round'
+      }
+    )
+    
+    // Add start and end markers
+    const startMarker = L.marker(routePoints[0], {
+      icon: L.divIcon({
+        className: 'start-marker',
+        html: '🚢',
+        iconSize: [30, 30]
+      })
+    })
+    
+    const endMarker = L.marker(routePoints[routePoints.length - 1], {
+      icon: L.divIcon({
+        className: 'end-marker',
+        html: '🏁',
+        iconSize: [30, 30]
+      })
+    })
+    
+    const styledLayer = createLayer([styledRoute, startMarker, endMarker])
+    toggleFromMap(styledLayer)
+  }
+
+  return (
+    <div style={{ height: '100vh', position: 'relative' }}>
+      <div id="map" style={{ height: '100%', width: '100%' }} />
+      
+      {map && (
+        <button
+          onClick={createStyledRoute}
+          style={{
+            position: 'absolute',
+            top: 20,
+            right: 20,
+            zIndex: 1000,
+            padding: '10px 20px',
+            background: '#e74c3c',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Create Styled Route
+        </button>
+      )}
+    </div>
+  )
+}
+```
+
+### Route with Waypoint Information
+
+```tsx
+import React from 'react'
+import { useMap } from '@forgepack/leaflet'
+import * as L from 'leaflet'
+
+export const InformativeRoute = () => {
+  const { map, createLayer, toggleFromMap } = useMap()
+
+  const createDetailedRoute = () => {
+    const waypoints = [
+      { coords: L.latLng(-22.8956, -43.1844), name: "Rio Port", type: "port" },
+      { coords: L.latLng(-22.9200, -43.2075), name: "Copacabana", type: "landmark" },
+      { coords: L.latLng(-23.0132, -43.3264), name: "Angra dos Reis", type: "port" },
+      { coords: L.latLng(-23.9608, -46.3081), name: "Santos Port", type: "port" }
+    ]
+    
+    // Create the route line
+    const routeLine = L.polyline(
+      waypoints.map(wp => [wp.coords.lat, wp.coords.lng]),
+      { color: '#3498db', weight: 4 }
+    )
+    
+    // Create markers with popups
+    const markers = waypoints.map(waypoint => {
+      const icon = waypoint.type === 'port' ? '⚓' : '📍'
+      
+      return L.marker(waypoint.coords, {
+        icon: L.divIcon({
+          className: `waypoint-${waypoint.type}`,
+          html: icon,
+          iconSize: [25, 25]
+        })
+      }).bindPopup(`
+        <div>
+          <h4>${waypoint.name}</h4>
+          <p>Type: ${waypoint.type}</p>
+          <p>Lat: ${waypoint.coords.lat.toFixed(4)}</p>
+          <p>Lng: ${waypoint.coords.lng.toFixed(4)}</p>
+        </div>
+      `)
+    })
+    
+    // Add distance labels between waypoints
+    const distanceLabels = []
+    for (let i = 0; i < waypoints.length - 1; i++) {
+      const p1 = waypoints[i].coords
+      const p2 = waypoints[i + 1].coords
+      const distance = (p1.distanceTo(p2) / 1852).toFixed(1) // nautical miles
+      const midpoint = L.latLng(
+        (p1.lat + p2.lat) / 2,
+        (p1.lng + p2.lng) / 2
+      )
+      
+      const label = L.marker(midpoint, {
+        icon: L.divIcon({
+          className: 'distance-label',
+          html: `${distance} NM`,
+          iconSize: [50, 20]
+        })
+      })
+      
+      distanceLabels.push(label)
+    }
+    
+    const routeLayer = createLayer([routeLine, ...markers, ...distanceLabels])
+    toggleFromMap(routeLayer)
+  }
+
+  return (
+    <div style={{ height: '100vh', position: 'relative' }}>
+      <div id="map" style={{ height: '100%', width: '100%' }} />
+      
+      {map && (
+        <button
+          onClick={createDetailedRoute}
+          style={{
+            position: 'absolute',
+            top: 20,
+            right: 20,
+            zIndex: 1000,
+            padding: '10px 20px',
+            background: '#3498db',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Create Detailed Route
+        </button>
+      )}
+      
+      <style jsx>{`
+        .waypoint-port {
+          background: #e74c3c;
+          color: white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .waypoint-landmark {
+          background: #f39c12;
+          color: white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .distance-label {
+          background: rgba(255, 255, 255, 0.9);
+          border: 1px solid #3498db;
+          border-radius: 4px;
+          padding: 2px 6px;
+          font-size: 12px;
+          text-align: center;
+        }
+      `}</style>
+    </div>
+  )
+}
+```
+
+## Distance Calculations
+
+The package automatically calculates and displays distances in nautical miles:
+
+- **Segment Distances**: Shows distance between each pair of consecutive waypoints
+- **Total Distance**: Calculate total route distance by summing segments
+- **Bearing Information**: Can be extended to show bearing between waypoints
+- **ETA Calculations**: Can be combined with speed data for arrival estimates
+
+## Next Steps
+
+- [Image Overlays](./image-overlays.md) - Add charts and nautical overlays
+- [API Reference](../api/) - Detailed component and hook documentation

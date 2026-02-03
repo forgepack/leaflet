@@ -1,60 +1,76 @@
-# Documentation - @forgepack/request
+# Documentation - @forgepack/leaflet
 
-Complete documentation for the React package for HTTP request management with JWT authentication.
+Complete documentation for the React Leaflet components library for interactive map visualization and geospatial data management.
 
 ## 📚 Table of Contents
 
 ### Usage Guides
 - [Installation and Setup](./getting-started.md)
-- [Authentication](./authentication.md)  
-- [Route Protection](./route-protection.md)
-- [Requests and Pagination](./requests.md)
-- [CRUD Operations](./crud-operations.md)
-- [Token Management](./token-management.md)
+- [Map Configuration](./map-configuration.md)
+- [Layer Management](./layer-management.md)
+- [Interactive Drawing](./interactive-drawing.md)
+- [File Processing](./file-processing.md)
+- [Styling and Theming](./styling.md)
 
 ### Practical Examples
-- [Login Form](./examples/login-form.md)
-- [Users List](./examples/users-list.md)
-- [Complete Dashboard](./examples/dashboard.md)
-- [User Service](./examples/user-service.md)
+- [Basic Map Setup](./examples/basic-map.md)
+- [Marker Management](./examples/markers.md)
+- [Route Planning](./examples/route-planning.md)
+- [Image Overlays](./examples/image-overlays.md)
 
 ### API Reference
-- [Hooks](./api/hooks.md)
 - [Components](./api/components.md)
-- [Services](./api/services.md)
-- [TypeScript Types](./api/types.md)
+- [Hooks](./api/hooks.md)
 - [Utilities](./api/utilities.md)
+- [TypeScript Types](./api/types.md)
 
 ## 🚀 Main Features
 
-- **🔐 JWT Authentication** - Complete system with automatic interceptors
-- **🛡️ Route Protection** - Role-based access control
-- **📊 Reactive Requests** - Hooks with automatic state
-- **⚡ Simplified CRUD** - Standardized operations
-- **🔑 Secure Tokens** - Automatic validation and management
-- **📱 Responsive Interface** - Loading and error states
+- **🗺️ Interactive Maps** - Full-featured Leaflet integration with React
+- **📍 Layer Management** - Create, toggle, and manage map layers
+- **🎨 Interactive Drawing** - Point-and-click route creation with real-time preview
+- **📁 File Processing** - Support for coordinate files and georeferenced images
+- **📏 Distance Calculation** - Automatic distance labeling for routes (nautical miles)
+- **🖼️ Image Overlays** - Georeferenced image overlay support
+- **🧭 Navigation Tools** - Maritime and nautical chart support
+- **⚡ TypeScript Support** - Full type safety and IntelliSense
 
 ## 💡 Package Philosophy
 
-This package was developed to eliminate common boilerplate in React applications that need:
+This package was developed specifically for maritime and geospatial applications that need:
 
-1. **Secure JWT authentication** with automatic renewal
-2. **HTTP interceptors** to add tokens automatically  
-3. **State management** for requests
-4. **Route protection** based on permissions
-5. **CRUD operations** standardized and reusable
+1. **Interactive map visualization** with Leaflet integration
+2. **Coordinate-based layer creation** from text files
+3. **Real-time route drawing** with distance calculations
+4. **Image overlay management** for charts and nautical data
+5. **Layer organization** with visual cards and controls
+6. **Maritime-focused features** like nautical mile calculations
 
 ## 🎯 Ideal Use Cases
 
-- SPA Applications (React, Next.js, Vite)
-- Administrative dashboards
-- User portals
-- REST APIs with JWT authentication
-- Systems with multiple permission levels
+- Maritime navigation applications
+- Hydrographic data visualization
+- Nautical chart management systems
+- Oceanographic monitoring dashboards
+- Geospatial analysis tools
+- Interactive mapping applications
+- Route planning and navigation systems
+
+## 🌊 Maritime Features
+
+- **Nautical Charts**: Support for nautical chart overlays
+- **Navigation**: Route planning with ETA calculations
+- **Hydrography**: Tide stations and maritime data visualization
+- **Lighthouse Management**: Maritime infrastructure mapping
+- **Distance Calculations**: Precise nautical mile measurements
 
 ## 📋 Prerequisites
 
 - React 18+
-- React Router DOM 6+
+- Leaflet 1.9+
 - TypeScript (recommended)
-- Native Fetch API (built into modern browsers)
+- Modern bundler (Vite, Webpack, etc.)
+
+---
+
+*Built with ❤️ for the maritime and geospatial community*

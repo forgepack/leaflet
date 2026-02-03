@@ -2,7 +2,9 @@
 
 ## Overview
 
-The utilities module provides helper functions for token validation, authentication, and common operations.
+Utility functions and helpers for working with @forgepack/leaflet components.
+
+## File Processing
 
 ## Functions
 

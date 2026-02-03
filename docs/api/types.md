@@ -1,10 +1,14 @@
 # TypeScript Types
 
-## Main Interfaces
+## Overview
 
-### Auth
+Complete TypeScript type definitions for @forgepack/leaflet components and utilities.
 
-Interface that represents user authentication data.
+## Core Types
+
+### UseMapReturn
+
+Return interface for the useMap hook:
 
 ```typescript
 interface Auth {

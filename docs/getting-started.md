@@ -4,20 +4,32 @@
 
 ```bash
 # npm
-npm install @forgepack/request
+npm install @forgepack/leaflet leaflet
 
 # yarn
-yarn add @forgepack/request
+yarn add @forgepack/leaflet leaflet
 
 # pnpm
-pnpm add @forgepack/request
+pnpm add @forgepack/leaflet leaflet
+```
+
+## 📋 Dependencies
+
+The package requires these peer dependencies:
+
+```bash
+# Required peer dependencies
+npm install react react-dom leaflet
+
+# TypeScript users also need
+npm install --save-dev @types/leaflet
 ```
 
 ## ⚙️ Initial Setup
 
-### 1. API Client
+### 1. Basic Map Component
 
-First, configure the Axios client with automatic interceptors:
+Start with the simplest implementation:
 
 ```typescript
 // src/api.ts
