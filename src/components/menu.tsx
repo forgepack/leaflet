@@ -1,32 +1,101 @@
+/**
+ * @fileoverview Interactive menu component for map controls and layer management.
+ * Provides tools for adding markers, lines, polygons, overlays, and drawing routes.
+ */
+
 import React, { JSX } from "react";
 import * as L from "leaflet";
 import { HandleInputFile } from "./handleInputFile";
 
+/**
+ * @interface MenuProps
+ * @description Properties for the main Menu component
+ */
 interface MenuProps {
+	/** Leaflet map instance */
 	map: L.Map;
+	/** Function to add/remove layers from the map */
 	toggleFromMap: (feature: L.FeatureGroup) => void;
+	/** Optional function to create marker layers from coordinates */
 	addMarkers?: (points: L.LatLng[]) => L.FeatureGroup;
+	/** Optional function to create polyline layers from coordinates */
 	addPolyline?: (points: L.LatLng[]) => L.FeatureGroup;
+	/** Optional function to create polygon layers from coordinates */
 	addPolygon?: (points: L.LatLng[]) => L.FeatureGroup;
+	/** Optional function to create image overlay layers */
 	addOverlay?: (sw: L.LatLngExpression, ne: L.LatLngExpression, file: File) => L.FeatureGroup;
+	/** Optional function to start interactive route drawing mode */
 	startDrawingRoute?: () => void;
+	/** Optional function to complete route drawing and create the layer */
 	finishDrawingRoute?: () => L.FeatureGroup | null;
+	/** Optional function to cancel route drawing mode */
 	cancelDrawingRoute?: () => void;
+	/** Whether route drawing mode is currently active */
 	isDrawingRoute?: boolean;
+	/** Array of points in the current route being drawn */
 	routePoints?: L.LatLng[];
 }
 
+/**
+ * @interface MenuItem
+ * @description Configuration object for individual menu items
+ */
 interface MenuItem {
+	/** Unique identifier for the menu item */
 	id: string;
+	/** Display label for the item */
 	label: string;
+	/** SVG icon element to display */
 	icon: JSX.Element;
+	/** ID of associated file input element */
 	fileInputId: string;
+	/** Optional file change handler */
 	handler?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+	/** Optional click handler for non-file actions */
 	onClick?: (e: React.MouseEvent) => void;
+	/** Whether the item is currently in active state */
 	isActive?: boolean;
+	/** Optional badge number to display */
 	badge?: number;
 }
 
+/**
+ * @component Menu
+ * @description Interactive menu providing tools for map layer management and drawing.
+ * 
+ * Features include:
+ * - File-based layer creation (markers, lines, polygons, overlays)
+ * - Interactive route drawing with real-time feedback
+ * - Visual indicators for active states
+ * - Contextual tooltips and controls
+ * 
+ * @param {MenuProps} props - Component properties
+ * @param {L.Map} props.map - Leaflet map instance
+ * @param {Function} props.toggleFromMap - Layer toggle function
+ * @param {Function} [props.addMarkers] - Marker creation function
+ * @param {Function} [props.addPolyline] - Polyline creation function
+ * @param {Function} [props.addPolygon] - Polygon creation function
+ * @param {Function} [props.addOverlay] - Overlay creation function
+ * @param {Function} [props.startDrawingRoute] - Route drawing start function
+ * @param {Function} [props.finishDrawingRoute] - Route drawing finish function
+ * @param {Function} [props.cancelDrawingRoute] - Route drawing cancel function
+ * @param {boolean} [props.isDrawingRoute=false] - Route drawing state
+ * @param {L.LatLng[]} [props.routePoints=[]] - Current route points
+ * 
+ * @returns {JSX.Element} Rendered menu component
+ * 
+ * @example
+ * ```tsx
+ * <Menu
+ *   map={mapInstance}
+ *   toggleFromMap={handleToggleLayer}
+ *   addMarkers={createMarkers}
+ *   addPolyline={createPolyline}
+ *   startDrawingRoute={startRouteMode}
+ *   isDrawingRoute={drawingState}
+ * />
+ * ```
+ */
 export const Menu = ({
 	map,
 	toggleFromMap,
@@ -41,6 +110,12 @@ export const Menu = ({
 	routePoints = []
 }: MenuProps) => {
 
+	/**
+	 * @function handleRouteClick
+	 * @description Handles route button clicks for starting or finishing route drawing
+	 * @param {React.MouseEvent} e - Click event
+	 * @private
+	 */
 	const handleRouteClick = (e: React.MouseEvent) => {
 		e.preventDefault();
 		e.stopPropagation();
@@ -52,12 +127,24 @@ export const Menu = ({
 		}
 	};
 
+	/**
+	 * @function handleRouteCancelClick
+	 * @description Handles route cancellation button clicks
+	 * @param {React.MouseEvent} e - Click event
+	 * @private
+	 */
 	const handleRouteCancelClick = (e: React.MouseEvent) => {
 		e.preventDefault();
 		e.stopPropagation();
 		cancelDrawingRoute?.();
 	};
 
+	/**
+	 * @constant menuItems
+	 * @description Configuration array for all menu items with their handlers and properties
+	 * @type {MenuItem[]}
+	 * @private
+	 */
 	const menuItems: MenuItem[] = [
 		{
 			id: "marker",
@@ -114,14 +201,41 @@ export const Menu = ({
 	);
 };
 
-// Componente de item de menu
+/**
+ * @interface MenuItemComponentProps
+ * @description Props for individual menu item components
+ */
 interface MenuItemComponentProps {
+	/** Menu item configuration */
 	item: MenuItem;
+	/** Whether to show the cancel button for this item */
 	showCancelButton: boolean;
+	/** Cancel button click handler */
 	onCancel: (e: React.MouseEvent) => void;
 }
 
+/**
+ * @component MenuItemComponent
+ * @description Renders an individual menu item with appropriate controls and interactions.
+ * 
+ * Handles:
+ * - File input triggering for file-based items
+ * - Click events for action-based items
+ * - Visual states (active, badges)
+ * - Tooltips and accessibility
+ * 
+ * @param {MenuItemComponentProps} props - Component properties
+ * @returns {JSX.Element} Rendered menu item
+ * 
+ * @private
+ */
 const MenuItemComponent = ({ item, showCancelButton, onCancel }: MenuItemComponentProps) => {
+	/**
+	 * @function handleClick
+	 * @description Handles menu item click events, either triggering file input or custom action
+	 * @param {React.MouseEvent} e - Click event
+	 * @private
+	 */
 	const handleClick = (e: React.MouseEvent) => {
 		e.preventDefault();
 
@@ -168,6 +282,12 @@ const MenuItemComponent = ({ item, showCancelButton, onCancel }: MenuItemCompone
 	)
 }
 
+/**
+ * @component MarkerIcon
+ * @description SVG icon component for marker tool
+ * @returns {JSX.Element} Marker icon SVG
+ * @private
+ */
 const MarkerIcon = () => (
 	<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
 		<g id="Layer_88" data-name="Layer 88">
@@ -177,6 +297,12 @@ const MarkerIcon = () => (
 	</svg>
 )
 
+/**
+ * @component LineIcon
+ * @description SVG icon component for polyline tool
+ * @returns {JSX.Element} Line icon SVG
+ * @private
+ */
 const LineIcon = () => (
 	<svg fill="currentColor" version="1.0" id="Layer_1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="64px" height="64px" viewBox="0 0 64 64" enableBackground="new 0 0 64 64">
 		<rect x="1" y="53" fill="currentColor" stroke="#000000" strokeWidth="2" strokeMiterlimit="10" width="10" height="10"></rect>
@@ -185,6 +311,12 @@ const LineIcon = () => (
 	</svg>
 )
 
+/**
+ * @component PolygonIcon
+ * @description SVG icon component for polygon tool
+ * @returns {JSX.Element} Polygon icon SVG
+ * @private
+ */
 const PolygonIcon = () => (
 	<svg width="800px" height="800px" viewBox="0 0 48 48" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
 		<path fillRule="evenodd" clipRule="evenodd" d="M14 40C15.1046 40 16 39.1046 16 38C16 36.8954 15.1046 36 14 36C12.8954 36 12 36.8954 12 38C12 39.1046 12.8954 40 14 40ZM14 42C16.2091 42 18 40.2091 18 38C18 35.7909 16.2091 34 14 34C11.7909 34 10 35.7909 10 38C10 40.2091 11.7909 42 14 42Z" fill="currentColor" />
@@ -196,12 +328,24 @@ const PolygonIcon = () => (
 	</svg>
 )
 
+/**
+ * @component OverlayIcon
+ * @description SVG icon component for image overlay tool
+ * @returns {JSX.Element} Overlay icon SVG
+ * @private
+ */
 const OverlayIcon = () => (
 	<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
 		<rect x="10" y="10" width="44" height="44" stroke="black" fill="currentColor" />
 	</svg>
 )
 
+/**
+ * @component RouteIcon
+ * @description SVG icon component for route drawing tool
+ * @returns {JSX.Element} Route icon SVG
+ * @private
+ */
 const RouteIcon = () => (
 	<svg
 		fill="currentColor"
@@ -214,12 +358,28 @@ const RouteIcon = () => (
 	</svg>
 )
 
+/**
+ * @component RouteBadge
+ * @description Badge component displaying the number of points in the current route
+ * @param {Object} props - Component properties
+ * @param {number} props.count - Number of points to display
+ * @returns {JSX.Element} Badge element
+ * @private
+ */
 const RouteBadge = ({ count }: { count: number }) => (
 	<span className="route-badge">
 		{count}
 	</span>
 )
 
+/**
+ * @component CancelButton
+ * @description Cancel button for cancelling route drawing mode
+ * @param {Object} props - Component properties
+ * @param {Function} props.onClick - Click handler function
+ * @returns {JSX.Element} Cancel button element
+ * @private
+ */
 const CancelButton = ({ onClick }: { onClick: (e: React.MouseEvent) => void }) => (
 	<button
 		onClick={onClick}
@@ -231,6 +391,14 @@ const CancelButton = ({ onClick }: { onClick: (e: React.MouseEvent) => void }) =
 	</button>
 )
 
+/**
+ * @function getRouteTooltip
+ * @description Generates contextual tooltip text for the route button based on drawing state
+ * @param {boolean} isDrawing - Whether route drawing is active
+ * @param {number} pointsCount - Current number of points in the route
+ * @returns {string} Appropriate tooltip text
+ * @private
+ */
 const getRouteTooltip = (isDrawing: boolean, pointsCount: number): string => {
 	if (!isDrawing) return 'Draw Route';
 	return pointsCount >= 2 ? 'Click to Finish' : `Points: ${pointsCount}`;

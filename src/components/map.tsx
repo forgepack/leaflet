@@ -1,7 +1,38 @@
+/**
+ * @fileoverview Main Map component that integrates all map functionality.
+ * Combines the map view, layer management cards, menu controls, and route drawing features.
+ */
+
 import { useMap } from "./useMap";
 import { Menu } from "./menu";
 import { Card } from "./card";
 
+/**
+ * @component Map
+ * @description Main map component that orchestrates all map-related functionality.
+ * 
+ * This component:
+ * - Renders the map container
+ * - Integrates the map hook for map management
+ * - Displays layer management cards
+ * - Shows the control menu
+ * - Handles route drawing with visual feedback
+ * 
+ * @returns {JSX.Element} Complete map interface with all controls
+ * 
+ * @example
+ * ```tsx
+ * import { Map } from './components/Map';
+ * 
+ * function App() {
+ *   return (
+ *     <div className="app">
+ *       <Map />
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
 export const Map = () => {
 	const {
 		map,
@@ -48,15 +79,43 @@ export const Map = () => {
 	)
 }
 
-// Componente para banner de informações durante desenho
+/**
+ * @interface RouteDrawingBannerProps
+ * @description Props for the route drawing information banner
+ */
 interface RouteDrawingBannerProps {
+	/** Whether route drawing mode is currently active */
 	isDrawing: boolean;
+	/** Number of points added to the current route */
 	pointsCount: number;
 }
 
+/**
+ * @component RouteDrawingBanner
+ * @description Information banner displayed during route drawing mode.
+ * 
+ * Provides real-time feedback to users about:
+ * - Current drawing state
+ * - Number of points added
+ * - Instructions for completing the route
+ * 
+ * @param {RouteDrawingBannerProps} props - Component properties
+ * @param {boolean} props.isDrawing - Drawing mode state
+ * @param {number} props.pointsCount - Current point count
+ * 
+ * @returns {JSX.Element | null} Banner element or null if not drawing
+ * 
+ * @private
+ */
 const RouteDrawingBanner = ({ isDrawing, pointsCount }: RouteDrawingBannerProps) => {
 	if (!isDrawing) return null
 
+	/**
+	 * @function getBannerText
+	 * @description Generates appropriate banner text based on drawing progress
+	 * @returns {string} Contextual instruction text
+	 * @private
+	 */
 	const getBannerText = (): string => {
 		if (pointsCount >= 2) {
 			return `${pointsCount} pontos • Clique no botão Route para finalizar`;
