@@ -3,15 +3,15 @@
 
 [![npm version](https://img.shields.io/npm/v/@forgepack/leaflet?color=blue)](https://www.npmjs.com/package/@forgepack/leaflet)
 [![npm downloads](https://img.shields.io/npm/dm/@forgepack/leaflet)](https://www.npmjs.com/package/@forgepack/leaflet)
-[![GitHub stars](https://img.shields.io/github/stars/forgepack/request?style=social)](https://github.com/forgepack/request)
-[![license](https://img.shields.io/npm/l/@forgepack/leaflet)](https://github.com/forgepack/request/blob/main/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/forgepack/leaflet?style=social)](https://github.com/forgepack/leaflet)
+[![license](https://img.shields.io/npm/l/@forgepack/leaflet)](https://github.com/forgepack/leaflet/blob/main/LICENSE)
 
 [![React](https://img.shields.io/badge/React-19.2.0-61DAFB?logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Leaflet](https://img.shields.io/badge/Leaflet-JS_Map_Library-199900?logo=leaflet)](https://leafletjs.com/)
 
 
-[Documentation](https://forgepack.dev/packages/request) • [NPM Package](https://www.npmjs.com/package/@forgepack/leaflet) • [GitHub](https://github.com/forgepack/request) • [Report Bug](https://github.com/forgepack/request/issues)
+[Documentation](https://forgepack.dev/packages/leaflet) • [NPM Package](https://www.npmjs.com/package/@forgepack/leaflet) • [GitHub](https://github.com/forgepack/leaflet) • [Report Bug](https://github.com/forgepack/leaflet/issues)
 
 ## Description
 
