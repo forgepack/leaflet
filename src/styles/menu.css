@@ -1,0 +1,280 @@
+/* Menu Container */
+.menu {
+	width: 2rem;
+	position: absolute;
+	bottom: 50%;
+	transform: translateY(50%);
+	z-index: 1000;
+}
+
+.menu ul {
+	list-style: none;
+}
+
+/* Menu Items */
+.menuitem {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+}
+
+.menuitem .icon-content {
+	position: relative;
+	padding: 0.2rem;
+}
+
+/* Tooltips */
+.menuitem .icon-content .tooltip {
+	position: absolute;
+	top: 100%;
+	left: 100%;
+	transform: translateY(230%);
+	color: #fff;
+	padding: 6px 10px;
+	border-radius: 5px;
+	opacity: 0;
+	visibility: hidden;
+	font-size: 14px;
+	transition: all 0.3s ease;
+	white-space: nowrap;
+	z-index: 1001;
+}
+
+.menuitem .icon-content:hover .tooltip {
+	opacity: 1;
+	visibility: visible;
+	top: -50px;
+}
+
+/* Menu Links */
+.menuitem .icon-content a {
+	position: relative;
+	overflow: hidden;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 50px;
+	height: 50px;
+	border-radius: 50%;
+	color: #4d4d4d;
+	background-color: rgba(255, 255, 255, 0.9);
+	transition: all 0.3s ease-in-out;
+	box-shadow: 
+		rgba(0, 0, 0, 0.35) 0px 5px 15px,
+		rgba(0, 73, 144, 0.5) 5px 10px 15px;
+	cursor: pointer;
+}
+
+.menuitem .icon-content a svg {
+	position: relative;
+	z-index: 1;
+	width: 30px;
+	height: 30px;
+}
+
+.menuitem .icon-content a:hover {
+	color: white;
+	transform: translateY(-2px);
+}
+
+/* Filled Background Effect */
+.menuitem .icon-content a .filled {
+	position: absolute;
+	top: auto;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: 0;
+	background-color: #000;
+	transition: all 0.3s ease-in-out;
+}
+
+.menuitem .icon-content a:hover .filled {
+	height: 100%;
+}
+
+/* Color Schemes for Different Tools */
+.menuitem .icon-content a[data-social="marker"] .filled,
+.menuitem .icon-content a[data-social="marker"] ~ .tooltip {
+	background-color: #1B998B;
+}
+
+.menuitem .icon-content a[data-social="line"] .filled,
+.menuitem .icon-content a[data-social="line"] ~ .tooltip {
+	background-color: #788BFF;
+}
+
+.menuitem .icon-content a[data-social="polygon"] .filled,
+.menuitem .icon-content a[data-social="polygon"] ~ .tooltip {
+	background-color: #467599;
+}
+
+.menuitem .icon-content a[data-social="overlay"] .filled,
+.menuitem .icon-content a[data-social="overlay"] ~ .tooltip {
+	background-color: #1D3354;
+}
+
+.menuitem .icon-content a[data-social="route"] .filled,
+.menuitem .icon-content a[data-social="route"] ~ .tooltip {
+	background-color: #3388ff;
+}
+
+/* Route Specific Styles */
+.active-route {
+	position: relative;
+}
+
+.active-route a {
+	box-shadow: 
+		rgba(0, 0, 0, 0.35) 0px 5px 15px,
+		rgba(51, 136, 255, 0.8) 0px 0px 20px;
+}
+
+.route-badge {
+	position: absolute;
+	top: 5px;
+	right: 5px;
+	background: #3388ff;
+	color: white;
+	border-radius: 50%;
+	width: 20px;
+	height: 20px;
+	font-size: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: bold;
+	border: 2px solid white;
+	pointer-events: none;
+	z-index: 2;
+}
+
+.cancel-button {
+	position: absolute;
+	top: -5px;
+	left: -5px;
+	background: #ff4444;
+	color: white;
+	border: none;
+	border-radius: 50%;
+	width: 22px;
+	height: 22px;
+	font-size: 14px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 10;
+	font-weight: bold;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+	pointer-events: auto;
+	transition: all 0.2s ease;
+}
+
+.cancel-button:hover {
+	background: #ff2222;
+	transform: scale(1.1);
+}
+
+/* Bottom Navigation (Alternative Menu) */
+.nav-bottom {
+	height: 6rem;
+	width: 50%;
+	position: absolute;
+	bottom: 1rem;
+	left: 50%;
+	transform: translateX(-50%);
+	display: flex;
+	gap: 1rem;
+	padding: 0.5rem 1rem;
+	backdrop-filter: blur(12px);
+	border-radius: 1rem;
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+	align-items: center;
+	background: rgba(255, 255, 255, 0.1);
+}
+
+.feat {
+	z-index: 2000;
+}
+
+.feat div {
+	position: relative;
+	height: 6rem;
+	width: 6rem;
+	color: white;
+	font-weight: 600;
+	font-size: 1rem;
+	border-radius: 0.7rem;
+	background: linear-gradient(135deg, #3a7bd5, #3a6073);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+	transition: transform 0.3s ease, box-shadow 0.3s ease;
+	cursor: pointer;
+	margin-left: -4rem;
+	transform: perspective(800px) rotateY(50deg);
+	transition: 1s;
+}
+
+.feat div:hover {
+	transform: translateY(-6px) rotateY(0deg);
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.feat div button {
+	position: absolute;
+	top: 0.3rem;
+	left: 0.3rem;
+	background: rgba(255, 255, 255, 0.2);
+	border: none;
+	border-radius: 50%;
+	color: white;
+	width: 1.5rem;
+	height: 1.5rem;
+	font-size: 0.8rem;
+	cursor: pointer;
+	transition: background 0.2s ease;
+}
+
+.feat div button:hover {
+	background: rgba(255, 255, 255, 0.4);
+}
+
+/* Adicione estas classes ao seu menu.css existente */
+
+.file-input {
+	display: none;
+}
+
+.menu-link {
+	position: relative;
+	overflow: hidden;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 50px;
+	height: 50px;
+	border-radius: 50%;
+	color: #4d4d4d;
+	background-color: rgba(255, 255, 255, 0.9);
+	transition: all 0.3s ease-in-out;
+	box-shadow: 
+		rgba(0, 0, 0, 0.35) 0px 5px 15px,
+		rgba(0, 73, 144, 0.5) 5px 10px 15px;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+.menu-link:hover {
+	color: white;
+	transform: translateY(-2px);
+}
+
+/* Adicione esta regra para o ícone de rota */
+.menuitem .icon-content a[data-social="route"] .filled,
+.menuitem .icon-content a[data-social="route"] ~ .tooltip {
+	background-color: #3388ff;
+}
