@@ -1,4 +1,4 @@
-import React from "react";
+import React, { JSX } from "react";
 import * as L from "leaflet";
 import { HandleInputFile } from "./handleInputFile";
 
