@@ -1,13 +1,13 @@
 {
     "name": "@forgepack/leaflet",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "A versatile platform designed for the consolidation of georeferenced data, enabling its use in spatial analysis, monitoring, decision-making, and real-time interdisciplinary applications.",
     "homepage": "https://forgepack.dev/packages/leaflet",
     "bugs": {
         "url": "https://github.com/forgepack/leaflet/issues"
     },
     "publishConfig": {
-        "@forgepack:registry": "https://npm.pkg.github.com"
+        "@forgepack:registry": "https://registry.npmjs.org"
     },
     "repository": {
         "type": "git",

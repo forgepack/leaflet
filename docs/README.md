@@ -6,23 +6,23 @@ Complete documentation for the React Leaflet components library for interactive 
 
 ### Usage Guides
 - [Installation and Setup](./getting-started.md)
-- [Map Configuration](./map-configuration.md)
-- [Layer Management](./layer-management.md)
-- [Interactive Drawing](./interactive-drawing.md)
-- [File Processing](./file-processing.md)
-- [Styling and Theming](./styling.md)
 
 ### Practical Examples
 - [Basic Map Setup](./examples/basic-map.md)
 - [Marker Management](./examples/markers.md)
 - [Route Planning](./examples/route-planning.md)
 - [Image Overlays](./examples/image-overlays.md)
+- [Dashboard](./examples/dashboard.md)
+- [Login Form](./examples/login-form.md)
+- [User Service](./examples/user-service.md)
+- [Users List](./examples/users-list.md)
 
 ### API Reference
 - [Components](./api/components.md)
 - [Hooks](./api/hooks.md)
+- [Services](./api/services.md)
+- [Types](./api/types.md)
 - [Utilities](./api/utilities.md)
-- [TypeScript Types](./api/types.md)
 
 ## 🚀 Main Features
 

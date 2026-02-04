@@ -1,596 +1,556 @@
-# Services
+# Services API Reference
 
 ## Overview
 
-The services module provides pre-configured service classes for common operations like authentication, CRUD operations, and token management.
+The services module provides service classes and functions for managing map data, layer persistence, and external integrations within the @forgepack/leaflet package.
 
-## AuthService
+## MapService
 
-Service class for handling authentication operations.
+Main service class for comprehensive map management operations.
 
 ### Constructor
 
 ```typescript
-class AuthService {
-  constructor(api: AxiosInstance)
+class MapService {
+  constructor(map: L.Map)
+}
+```
+
+#### Parameters
+
+- `map`: Leaflet map instance to manage
+
+### Methods
+
+#### addLayer
+
+Add a layer to the map with metadata tracking.
+
+```typescript
+addLayer(layer: L.FeatureGroup, metadata?: LayerMetadata): string
+```
+
+**Parameters:**
+- `layer`: Feature group to add to the map
+- `metadata`: Optional metadata for layer tracking
+
+**Returns:** Unique layer identifier string
+
+**Usage:**
+
+```typescript
+import { MapService } from '@forgepack/leaflet/services'
+import * as L from 'leaflet'
+
+const mapService = new MapService(map)
+
+const markerLayer = L.featureGroup([
+  L.marker([-22.8156, -43.1078])
+])
+
+const layerId = mapService.addLayer(markerLayer, {
+  type: 'markers',
+  name: 'Tourist Points',
+  source: 'manual'
+})
+```
+
+#### removeLayer
+
+Remove a layer from the map by identifier.
+
+```typescript
+removeLayer(layerId: string): boolean
+```
+
+**Parameters:**
+- `layerId`: Unique identifier of the layer to remove
+
+**Returns:** Success boolean
+
+**Usage:**
+
+```typescript
+const success = mapService.removeLayer(layerId)
+if (success) {
+  console.log('Layer removed successfully')
+}
+```
+
+#### getAllLayers
+
+Get all managed layers with their metadata.
+
+```typescript
+getAllLayers(): Array<{
+  id: string;
+  layer: L.FeatureGroup;
+  metadata: LayerMetadata;
+}>
+```
+
+**Returns:** Array of layer objects with metadata
+
+#### exportLayersAsGeoJSON
+
+Export all layers as GeoJSON format.
+
+```typescript
+exportLayersAsGeoJSON(): GeoJSON.FeatureCollection
+```
+
+**Returns:** GeoJSON FeatureCollection containing all layers
+
+**Usage:**
+
+```typescript
+const geoJsonData = mapService.exportLayersAsGeoJSON()
+const dataStr = JSON.stringify(geoJsonData, null, 2)
+const blob = new Blob([dataStr], { type: 'application/json' })
+
+// Create download link
+const url = URL.createObjectURL(blob)
+const link = document.createElement('a')
+link.href = url
+link.download = 'map-layers.geojson'
+link.click()
+```
+
+---
+
+## LayerStorageService
+
+Service for persisting and loading layer data to/from various storage backends.
+
+### Constructor
+
+```typescript
+class LayerStorageService {
+  constructor(storageType: 'localStorage' | 'indexedDB' | 'file' = 'localStorage')
 }
 ```
 
 ### Methods
 
-#### login
+#### saveLayer
 
-Authenticates a user with credentials.
+Save a layer to storage with metadata.
 
 ```typescript
-async login(credentials: LoginCredentials): Promise<LoginResponse>
+async saveLayer(
+  layerId: string, 
+  layer: L.FeatureGroup, 
+  metadata: LayerMetadata
+): Promise<boolean>
 ```
 
-**Parameters:**
-- `credentials` (LoginCredentials): User login credentials
+**Usage:**
 
-**Returns:**
-- `Promise<LoginResponse>`: Authentication response
-
-**Example:**
 ```typescript
-import { AuthService } from '@forgepack/request'
+import { LayerStorageService } from '@forgepack/leaflet/services'
 
-const authService = new AuthService(api)
+const storage = new LayerStorageService('localStorage')
 
-const result = await authService.login({
-  username: 'john.doe',
-  password: 'securePassword123'
+const success = await storage.saveLayer('markers-001', markerLayer, {
+  type: 'markers',
+  name: 'Saved Markers',
+  created: new Date(),
+  source: 'file'
 })
-
-if (result.success) {
-  console.log('Login successful:', result.data)
-} else {
-  console.error('Login failed:', result.errors)
-}
 ```
 
-#### logout
+#### loadLayer
 
-Logs out the current user.
+Load a layer from storage by identifier.
 
 ```typescript
-async logout(): Promise<void>
+async loadLayer(layerId: string): Promise<{
+  layer: L.FeatureGroup;
+  metadata: LayerMetadata;
+} | null>
 ```
 
-**Example:**
+#### listSavedLayers
+
+List all saved layers with their metadata.
+
 ```typescript
-await authService.logout()
-console.log('User logged out successfully')
+async listSavedLayers(): Promise<Array<{
+  id: string;
+  metadata: LayerMetadata;
+}>>
 ```
 
-#### refreshToken
-
-Refreshes the authentication token.
+**Usage:**
 
 ```typescript
-async refreshToken(refreshToken: string): Promise<Auth | null>
-```
-
-**Parameters:**
-- `refreshToken` (string): Refresh token
-
-**Returns:**
-- `Promise<Auth | null>`: New authentication data or null if failed
-
-**Example:**
-```typescript
-const newAuth = await authService.refreshToken(currentRefreshToken)
-if (newAuth) {
-  console.log('Token refreshed:', newAuth.accessToken)
-}
-```
-
-#### changePassword
-
-Changes user password.
-
-```typescript
-async changePassword(data: ChangePasswordData): Promise<boolean>
-```
-
-**Parameters:**
-- `data` (ChangePasswordData): Password change data
-
-**Returns:**
-- `Promise<boolean>`: Success status
-
-**Example:**
-```typescript
-const success = await authService.changePassword({
-  currentPassword: 'oldPassword',
-  newPassword: 'newSecurePassword123',
-  confirmPassword: 'newSecurePassword123'
+const savedLayers = await storage.listSavedLayers()
+savedLayers.forEach(({ id, metadata }) => {
+  console.log(`Layer: ${metadata.name} (${id})`)
 })
+```
 
-if (success) {
-  console.log('Password changed successfully')
-}
+#### deleteLayer
+
+Remove a saved layer from storage.
+
+```typescript
+async deleteLayer(layerId: string): Promise<boolean>
 ```
 
 ---
 
-## CrudService
+## FileService
 
-Generic service class for CRUD operations.
+Service for handling file import/export operations.
+
+### Static Methods
+
+#### importCoordinateFile
+
+Import coordinates from text file.
+
+```typescript
+static async importCoordinateFile(file: File): Promise<{
+  coordinates: L.LatLng[];
+  metadata: {
+    filename: string;
+    pointCount: number;
+    bounds: L.LatLngBounds;
+  };
+}>
+```
+
+**Usage:**
+
+```typescript
+import { FileService } from '@forgepack/leaflet/services'
+
+const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0]
+  if (file) {
+    try {
+      const result = await FileService.importCoordinateFile(file)
+      console.log(`Imported ${result.coordinates.length} coordinates`)
+      console.log('Bounds:', result.metadata.bounds)
+    } catch (error) {
+      console.error('Import failed:', error)
+    }
+  }
+}
+```
+
+#### exportCoordinatesAsCSV
+
+Export coordinates as CSV format.
+
+```typescript
+static exportCoordinatesAsCSV(
+  coordinates: L.LatLng[], 
+  filename: string = 'coordinates.csv'
+): void
+```
+
+#### importGeoJSON
+
+Import layers from GeoJSON data.
+
+```typescript
+static importGeoJSON(geoJsonData: GeoJSON.FeatureCollection): L.FeatureGroup[]
+```
+
+**Usage:**
+
+```typescript
+const geoJsonData = { /* GeoJSON data */ }
+const layers = FileService.importGeoJSON(geoJsonData)
+
+layers.forEach(layer => {
+  mapService.addLayer(layer)
+})
+```
+
+---
+
+## NavigationService
+
+Service for navigation and route planning functionality.
+
+### Static Methods
+
+#### calculateRoute
+
+Calculate optimal route between multiple waypoints.
+
+```typescript
+static calculateRoute(waypoints: L.LatLng[]): {
+  route: L.LatLng[];
+  totalDistance: number;
+  estimatedTime: number; // in hours
+  segments: RouteSegment[];
+}
+```
+
+**Usage:**
+
+```typescript
+import { NavigationService } from '@forgepack/leaflet/services'
+
+const waypoints = [
+  L.latLng(-22.8156, -43.1078),
+  L.latLng(-22.9068, -43.1729),
+  L.latLng(-22.9035, -43.2096)
+]
+
+const routeInfo = NavigationService.calculateRoute(waypoints)
+console.log(`Total distance: ${routeInfo.totalDistance.toFixed(2)} NM`)
+console.log(`Estimated time: ${routeInfo.estimatedTime.toFixed(1)} hours`)
+```
+
+#### calculateETA
+
+Calculate estimated time of arrival based on speed and distance.
+
+```typescript
+static calculateETA(
+  distance: number, 
+  speedKnots: number, 
+  departureTime?: Date
+): {
+  eta: Date;
+  travelTime: number; // in hours
+}
+```
+
+**Usage:**
+
+```typescript
+const eta = NavigationService.calculateETA(15.5, 8.5) // 15.5 NM at 8.5 knots
+console.log(`ETA: ${eta.eta.toLocaleString()}`)
+console.log(`Travel time: ${eta.travelTime.toFixed(1)} hours`)
+```
+
+---
+
+## WeatherService
+
+Service for integrating weather data with map layers.
 
 ### Constructor
 
 ```typescript
-class CrudService<T = any> {
-  constructor(api: AxiosInstance, baseEndpoint: string)
+class WeatherService {
+  constructor(apiKey?: string, provider?: 'openweather' | 'marine')
 }
 ```
 
 ### Methods
 
-#### findAll
+#### getWeatherAtPoint
 
-Retrieves paginated list of items.
+Get current weather conditions at a specific coordinate.
 
 ```typescript
-async findAll(search?: Search): Promise<Page<T>>
+async getWeatherAtPoint(point: L.LatLng): Promise<WeatherData>
 ```
 
-**Parameters:**
-- `search` (Search, optional): Search and pagination parameters
+**Usage:**
 
-**Returns:**
-- `Promise<Page<T>>`: Paginated response
-
-**Example:**
 ```typescript
-import { CrudService } from '@forgepack/request'
+import { WeatherService } from '@forgepack/leaflet/services'
 
-interface User {
-  id: string
-  name: string
-  email: string
-}
+const weatherService = new WeatherService(API_KEY)
 
-const userService = new CrudService<User>(api, 'users')
+const weather = await weatherService.getWeatherAtPoint(
+  L.latLng(-22.8156, -43.1078)
+)
 
-const users = await userService.findAll({
-  page: 0,
-  size: 10,
-  value: 'john',
-  sort: { key: 'name', order: 'ASC' }
-})
-
-console.log('Users:', users.content)
-console.log('Total pages:', users.page.totalPages)
+console.log(`Temperature: ${weather.temperature}°C`)
+console.log(`Wind: ${weather.windSpeed} knots from ${weather.windDirection}°`)
 ```
 
-#### findById
+#### addWeatherLayer
 
-Retrieves a single item by ID.
+Add weather overlay to the map.
 
 ```typescript
-async findById(id: string | number): Promise<T | null>
+async addWeatherLayer(
+  map: L.Map, 
+  layerType: 'precipitation' | 'wind' | 'temperature'
+): Promise<L.Layer>
 ```
 
-**Parameters:**
-- `id` (string | number): Item ID
+---
 
-**Returns:**
-- `Promise<T | null>`: Item data or null if not found
+## TideService
 
-**Example:**
+Service for tidal information and predictions.
+
+### Static Methods
+
+#### getTideStations
+
+Get nearby tide stations for a coordinate.
+
 ```typescript
-const user = await userService.findById('user-123')
-if (user) {
-  console.log('User found:', user.name)
-} else {
-  console.log('User not found')
-}
+static async getTideStations(
+  point: L.LatLng, 
+  radius: number = 50
+): Promise<TideStation[]>
 ```
 
-#### create
+#### getTidePredictions
 
-Creates a new item.
+Get tide predictions for a station and date range.
 
 ```typescript
-async create(data: Partial<T>): Promise<T>
+static async getTidePredictions(
+  stationId: string,
+  startDate: Date,
+  endDate: Date
+): Promise<TidePrediction[]>
 ```
 
-**Parameters:**
-- `data` (Partial<T>): Item data to create
-
-**Returns:**
-- `Promise<T>`: Created item
-
-**Example:**
-```typescript
-const newUser = await userService.create({
-  name: 'Jane Doe',
-  email: 'jane@example.com'
-})
-
-console.log('User created:', newUser.id)
-```
-
-#### update
-
-Updates an existing item.
+**Usage:**
 
 ```typescript
-async update(id: string | number, data: Partial<T>): Promise<T>
-```
+import { TideService } from '@forgepack/leaflet/services'
 
-**Parameters:**
-- `id` (string | number): Item ID
-- `data` (Partial<T>): Data to update
+const stations = await TideService.getTideStations(
+  L.latLng(-22.9068, -43.1729),
+  25 // 25 km radius
+)
 
-**Returns:**
-- `Promise<T>`: Updated item
-
-**Example:**
-```typescript
-const updatedUser = await userService.update('user-123', {
-  name: 'Jane Smith',
-  email: 'jane.smith@example.com'
-})
-
-console.log('User updated:', updatedUser.name)
-```
-
-#### delete
-
-Deletes an item by ID.
-
-```typescript
-async delete(id: string | number): Promise<boolean>
-```
-
-**Parameters:**
-- `id` (string | number): Item ID
-
-**Returns:**
-- `Promise<boolean>`: Success status
-
-**Example:**
-```typescript
-const success = await userService.delete('user-123')
-if (success) {
-  console.log('User deleted successfully')
-}
-```
-
-#### bulkDelete
-
-Deletes multiple items by IDs.
-
-```typescript
-async bulkDelete(ids: (string | number)[]): Promise<boolean>
-```
-
-**Parameters:**
-- `ids` (Array): Array of item IDs
-
-**Returns:**
-- `Promise<boolean>`: Success status
-
-**Example:**
-```typescript
-const success = await userService.bulkDelete(['user-1', 'user-2', 'user-3'])
-if (success) {
-  console.log('Users deleted successfully')
+if (stations.length > 0) {
+  const predictions = await TideService.getTidePredictions(
+    stations[0].id,
+    new Date(),
+    new Date(Date.now() + 24 * 60 * 60 * 1000) // Next 24 hours
+  )
+  
+  console.log(`Found ${predictions.length} tide predictions`)
 }
 ```
 
 ---
 
-## TokenService
+## Interface Definitions
 
-Service class for token management operations.
-
-### Constructor
+### LayerMetadata
 
 ```typescript
-class TokenService {
-  constructor(api: AxiosInstance)
+interface LayerMetadata {
+  type: 'markers' | 'polyline' | 'polygon' | 'overlay';
+  name: string;
+  created: Date;
+  source: 'file' | 'drawing' | 'manual' | 'imported';
+  filename?: string;
+  description?: string;
+  color?: string;
+  visible?: boolean;
 }
 ```
 
-### Methods
-
-#### validateToken
-
-Validates if a token is still valid on the server.
+### RouteSegment
 
 ```typescript
-async validateToken(token: string): Promise<boolean>
-```
-
-**Parameters:**
-- `token` (string): Token to validate
-
-**Returns:**
-- `Promise<boolean>`: Validation result
-
-**Example:**
-```typescript
-import { TokenService } from '@forgepack/request'
-
-const tokenService = new TokenService(api)
-const isValid = await tokenService.validateToken(currentToken)
-
-if (isValid) {
-  console.log('Token is valid')
-} else {
-  console.log('Token is invalid or expired')
+interface RouteSegment {
+  from: L.LatLng;
+  to: L.LatLng;
+  distance: number;
+  bearing: number;
+  estimatedTime: number;
 }
 ```
 
-#### refreshToken
-
-Refreshes an authentication token.
+### WeatherData
 
 ```typescript
-async refreshToken(refreshToken: string): Promise<Auth | null>
-```
-
-**Parameters:**
-- `refreshToken` (string): Refresh token
-
-**Returns:**
-- `Promise<Auth | null>`: New authentication data
-
-**Example:**
-```typescript
-const newAuth = await tokenService.refreshToken(refreshToken)
-if (newAuth) {
-  console.log('Token refreshed successfully')
+interface WeatherData {
+  temperature: number;
+  humidity: number;
+  pressure: number;
+  windSpeed: number;
+  windDirection: number;
+  visibility: number;
+  conditions: string;
+  timestamp: Date;
 }
 ```
 
-#### revokeToken
-
-Revokes a token on the server.
+### TideStation
 
 ```typescript
-async revokeToken(token: string): Promise<boolean>
-```
-
-**Parameters:**
-- `token` (string): Token to revoke
-
-**Returns:**
-- `Promise<boolean>`: Success status
-
-**Example:**
-```typescript
-const success = await tokenService.revokeToken(token)
-if (success) {
-  console.log('Token revoked successfully')
+interface TideStation {
+  id: string;
+  name: string;
+  coordinates: L.LatLng;
+  distance: number; // km from query point
+  type: 'primary' | 'secondary';
 }
 ```
 
----
-
-## Service Factory
-
-Factory function to create configured services.
-
-### createServices
-
-Creates all services with a shared API client.
+### TidePrediction
 
 ```typescript
-function createServices(api: AxiosInstance): Services
-```
-
-**Returns:**
-```typescript
-interface Services {
-  auth: AuthService
-  token: TokenService
-  crud: <T = any>(endpoint: string) => CrudService<T>
+interface TidePrediction {
+  datetime: Date;
+  height: number; // meters
+  type: 'high' | 'low';
 }
 ```
 
-**Example:**
-```typescript
-import { createServices, createApiClient } from '@forgepack/request'
+## Usage Examples
 
-const api = createApiClient({
-  baseURL: 'https://api.example.com'
-})
-
-const services = createServices(api)
-
-// Use auth service
-const loginResult = await services.auth.login(credentials)
-
-// Use token service
-const isValid = await services.token.validateToken(token)
-
-// Create CRUD service
-const userService = services.crud<User>('users')
-const users = await userService.findAll()
-```
-
----
-
-## Custom Service Example
-
-Creating a custom service extending the base functionality:
+### Complete Integration
 
 ```typescript
-// src/services/UserService.ts
-import { CrudService, type AxiosInstance } from '@forgepack/request'
+import React, { useEffect, useState } from 'react'
+import { useMap } from '@forgepack/leaflet'
+import { 
+  MapService, 
+  LayerStorageService, 
+  NavigationService 
+} from '@forgepack/leaflet/services'
 
-interface User {
-  id: string
-  name: string
-  email: string
-  avatar?: string
-  isActive: boolean
-  lastLogin?: string
-}
+function IntegratedMapComponent() {
+  const { map, layers } = useMap()
+  const [mapService, setMapService] = useState<MapService | null>(null)
+  const [storage] = useState(new LayerStorageService('localStorage'))
 
-interface UserStats {
-  totalUsers: number
-  activeUsers: number
-  newUsersThisMonth: number
-}
+  useEffect(() => {
+    if (map) {
+      const service = new MapService(map)
+      setMapService(service)
+      
+      // Load saved layers
+      loadSavedLayers(service)
+    }
+  }, [map])
 
-class UserService extends CrudService<User> {
-  constructor(api: AxiosInstance) {
-    super(api, 'users')
-  }
-
-  // Custom method: Get user statistics
-  async getStats(): Promise<UserStats> {
-    const response = await this.api.get(`${this.baseEndpoint}/stats`)
-    return response.data
-  }
-
-  // Custom method: Activate/deactivate user
-  async toggleUserStatus(userId: string): Promise<User> {
-    const response = await this.api.patch(`${this.baseEndpoint}/${userId}/toggle-status`)
-    return response.data
-  }
-
-  // Custom method: Get users by role
-  async findByRole(role: string): Promise<User[]> {
-    const response = await this.api.get(`${this.baseEndpoint}/by-role/${role}`)
-    return response.data
-  }
-
-  // Custom method: Upload user avatar
-  async uploadAvatar(userId: string, file: File): Promise<User> {
-    const formData = new FormData()
-    formData.append('avatar', file)
+  const loadSavedLayers = async (service: MapService) => {
+    const savedLayers = await storage.listSavedLayers()
     
-    const response = await this.api.post(
-      `${this.baseEndpoint}/${userId}/avatar`,
-      formData,
-      {
-        headers: { 'Content-Type': 'multipart/form-data' }
+    for (const { id } of savedLayers) {
+      const layerData = await storage.loadLayer(id)
+      if (layerData) {
+        service.addLayer(layerData.layer, layerData.metadata)
       }
-    )
-    
-    return response.data
-  }
-
-  // Override create to add custom validation
-  async create(data: Partial<User>): Promise<User> {
-    // Custom validation
-    if (!data.email?.includes('@')) {
-      throw new Error('Invalid email format')
-    }
-    
-    // Call parent create method
-    return super.create(data)
-  }
-}
-
-// Usage
-const userService = new UserService(api)
-
-// Use inherited methods
-const users = await userService.findAll({ page: 0, size: 10 })
-
-// Use custom methods
-const stats = await userService.getStats()
-const adminUsers = await userService.findByRole('ADMIN')
-const updatedUser = await userService.toggleUserStatus('user-123')
-
-console.log('User stats:', stats)
-console.log('Admin users:', adminUsers.length)
-```
-
-## Service Composition Example
-
-Using multiple services together in a React component:
-
-```typescript
-// src/hooks/useUserManagement.ts
-import { useState, useEffect } from 'react'
-import { createServices, createApiClient } from '@forgepack/request'
-
-const api = createApiClient({
-  baseURL: process.env.REACT_APP_API_URL || 'https://api.example.com'
-})
-
-const services = createServices(api)
-const userService = services.crud<User>('users')
-
-export const useUserManagement = () => {
-  const [users, setUsers] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-
-  const loadUsers = async (search = {}) => {
-    try {
-      setLoading(true)
-      setError(null)
-      const response = await userService.findAll(search)
-      setUsers(response.content)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
     }
   }
 
-  const createUser = async (userData) => {
-    try {
-      setLoading(true)
-      const newUser = await userService.create(userData)
-      setUsers(prev => [...prev, newUser])
-      return newUser
-    } catch (err) {
-      setError(err.message)
-      throw err
-    } finally {
-      setLoading(false)
+  const exportData = () => {
+    if (mapService) {
+      const geoJson = mapService.exportLayersAsGeoJSON()
+      // Handle export...
     }
   }
 
-  const updateUser = async (id, userData) => {
-    try {
-      setLoading(true)
-      const updatedUser = await userService.update(id, userData)
-      setUsers(prev => prev.map(user => 
-        user.id === id ? updatedUser : user
-      ))
-      return updatedUser
-    } catch (err) {
-      setError(err.message)
-      throw err
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const deleteUser = async (id) => {
-    try {
-      setLoading(true)
-      await userService.delete(id)
-      setUsers(prev => prev.filter(user => user.id !== id))
-    } catch (err) {
-      setError(err.message)
-      throw err
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return {
-    users,
-    loading,
-    error,
-    loadUsers,
-    createUser,
-    updateUser,
-    deleteUser
-  }
+  return (
+    <div>
+      <div id="map" style={{ height: '400px' }} />
+      <button onClick={exportData}>Export Layers</button>
+    </div>
+  )
 }
 ```

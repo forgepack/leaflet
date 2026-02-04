@@ -1,338 +1,369 @@
-# TypeScript Types
+# Types API Reference
 
 ## Overview
 
-Complete TypeScript type definitions for @forgepack/leaflet components and utilities.
+TypeScript type definitions for the @forgepack/leaflet package components and utilities.
 
-## Core Types
+## Component Props Types
+
+### CardProps
+
+Interface for the Card component properties.
+
+```typescript
+interface CardProps {
+  /** The Leaflet map instance */
+  map: L.Map;
+  /** Array of map layers to display in cards */
+  layers: L.Layer[];
+  /** Function to toggle layer visibility on the map */
+  toggleFromMap: (feature: L.Layer) => void;
+}
+```
+
+### CardItemProps
+
+Interface for individual card item component properties.
+
+```typescript
+interface CardItemProps {
+  /** The map layer/feature represented by this card */
+  feature: L.Layer;
+  /** The Leaflet map instance */
+  map: L.Map;
+  /** Function to toggle layer visibility on the map */
+  toggleFromMap: (feature: L.Layer) => void;
+}
+```
+
+### MenuProps
+
+Interface for the Menu component properties.
+
+```typescript
+interface MenuProps {
+  /** Function to start interactive route drawing mode */
+  startDrawingRoute: () => void;
+  /** Function to complete route drawing and create the final layer */
+  finishDrawingRoute: () => void;
+  /** Function to cancel route drawing mode */
+  cancelDrawingRoute: () => void;
+  /** Whether route drawing mode is currently active */
+  isDrawingRoute: boolean;
+}
+```
+
+## Utility Types
+
+### InputProps
+
+Interface for HandleInputFile function parameters.
+
+```typescript
+interface InputProps {
+  /** File input change event */
+  event: ChangeEvent<HTMLInputElement>;
+  /** Leaflet map instance */
+  map: L.Map;
+  /** Function to add/remove layers from the map */
+  toggleFromMap: (feature: L.FeatureGroup) => void;
+  /** Optional function to create marker layers from coordinates */
+  addMarkers?: (points: L.LatLng[]) => L.FeatureGroup;
+  /** Optional function to create polygon layers from coordinates */
+  addPolygon?: (points: L.LatLng[]) => L.FeatureGroup;
+  /** Optional function to create polyline layers from coordinates */
+  addPolyline?: (points: L.LatLng[]) => L.FeatureGroup;
+  /** Optional function to create image overlay from file and bounds */
+  addOverlay?: (sw: L.LatLngExpression, ne: L.LatLngExpression, file: File) => L.FeatureGroup;
+}
+```
+
+## Hook Types
 
 ### UseMapReturn
 
-Return interface for the useMap hook:
+Return type interface for the useMap hook containing all map functionality.
 
 ```typescript
-interface Auth {
-  readonly accessToken: string  // JWT access token
-  refreshToken: string         // Token for renewal
-  tokenType: string           // Token type (Bearer)
-  role: string[]             // User permissions
+interface UseMapReturn {
+  /** The initialized Leaflet map instance, undefined during initialization */
+  map: L.Map | undefined;
+  /** Array of feature groups representing map layers */
+  layers: L.FeatureGroup[];
+  /** Function to create a new feature group from an array of layers */
+  createLayer: (elements: L.Layer[]) => L.FeatureGroup;
+  /** Function to create marker layers from coordinate points */
+  addMarkers: (points: L.LatLng[]) => L.FeatureGroup;
+  /** Function to create polygon layers from coordinate points */
+  addPolygon: (points: L.LatLng[]) => L.FeatureGroup;
+  /** Function to create polyline layers with distance annotations */
+  addPolyline: (points: L.LatLng[]) => L.FeatureGroup;
+  /** Function to create image overlay layers */
+  addOverlay: (sw: L.LatLngExpression, ne: L.LatLngExpression, file: File) => L.FeatureGroup;
+  /** Function to toggle layer visibility on the map */
+  toggleFromMap: (layer: L.Layer) => void;
+  /** Function to start interactive route drawing mode */
+  startDrawingRoute: () => void;
+  /** Function to complete route drawing and create the final layer */
+  finishDrawingRoute: () => L.FeatureGroup | null;
+  /** Function to cancel route drawing mode */
+  cancelDrawingRoute: () => void;
+  /** Whether route drawing mode is currently active */
+  isDrawingRoute: boolean;
+  /** Array of points in the current route being drawn */
+  routePoints: L.LatLng[];
 }
 ```
 
-**Example:**
+## Image Type Declarations
+
+Module declarations for image file imports to enable importing image files as strings in TypeScript projects.
+
+### PNG Images
+
 ```typescript
-const auth: Auth = {
-  accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  refreshToken: "refresh_token_here",
-  tokenType: "Bearer",
-  role: ["USER", "ADMIN"]
+declare module "*.png" {
+  /** The file path or data URL of the PNG image */
+  const value: string;
+  export default value;
 }
 ```
 
-### LoginCredentials
-
-Interface for login credentials.
+### JPG Images
 
 ```typescript
-interface LoginCredentials {
-  username: string  // Username or email
-  password: string  // User password
+declare module "*.jpg" {
+  /** The file path or data URL of the JPG image */
+  const value: string;
+  export default value;
 }
 ```
 
-### LoginResponse
-
-Interface for typed login response.
+### JPEG Images
 
 ```typescript
-interface LoginResponse {
-  success: boolean                              // Indicates success
-  data?: Auth                                  // Auth data (if success)
-  errors?: Array<{ field: string; message: string }> // Errors (if failure)
+declare module "*.jpeg" {
+  /** The file path or data URL of the JPEG image */
+  const value: string;
+  export default value;
 }
 ```
 
-**Example:**
-```typescript
-const result: LoginResponse = await loginUser({ 
-  username: "user", 
-  password: "pass" 
-})
+### SVG Images
 
-if (result.success && result.data) {
-  console.log('Token:', result.data.accessToken)
-} else if (result.errors) {
-  console.error('Errors:', result.errors)
+```typescript
+declare module "*.svg" {
+  /** The file path or data URL of the SVG image */
+  const value: string;
+  export default value;
 }
 ```
 
-### ChangePasswordData
-
-Interface for password change.
+### GIF Images
 
 ```typescript
-interface ChangePasswordData {
-  currentPassword: string      // Current password
-  newPassword: string         // New password
-  confirmPassword?: string    // Confirmation (optional)
+declare module "*.gif" {
+  /** The file path or data URL of the GIF image */
+  const value: string;
+  export default value;
 }
 ```
 
----
-
-### ErrorMessage
-
-Interface for validation error messages.
+### WEBP Images
 
 ```typescript
-interface ErrorMessage {
-  field: string    // Field containing the error
-  message: string  // Descriptive message
+declare module "*.webp" {
+  /** The file path or data URL of the WEBP image */
+  const value: string;
+  export default value;
 }
 ```
 
-**Example:**
-```typescript
-const errors: ErrorMessage[] = [
-  { field: "username", message: "Username is required" },
-  { field: "password", message: "Password must have at least 6 characters" }
-]
-```
+## Configuration Types
 
----
+### MapConfig
 
-### Search
-
-Interface para parâmetros de busca e paginação.
+Configuration object for map initialization.
 
 ```typescript
-interface Search {
-  value?: string    // Termo de busca
-  page?: number     // Número da página (base 0)
-  size?: number     // Quantidade de itens por página
-  sort?: Sort       // Configuração de ordenação
-}
-
-interface Sort {
-  key: string                // Campo para ordenação
-  order: 'ASC' | 'DESC'     // Direção da ordenação
+interface MapConfig {
+  /** Map center coordinates */
+  center: L.LatLng;
+  /** Initial zoom level */
+  zoom: number;
+  /** Tile layer configuration */
+  tileLayer: {
+    /** Tile server URL pattern */
+    url: string;
+    /** Attribution text for the tile layer */
+    attribution: string;
+  };
 }
 ```
 
-**Exemplo:**
+### LayerOptions
+
+Extended options for layer creation and styling.
+
 ```typescript
-const searchParams: Search = {
-  value: "João",
-  page: 0,
-  size: 20,
-  sort: {
-    key: "name",
-    order: "ASC"
-  }
+interface LayerOptions extends L.PathOptions {
+  /** Custom popup content */
+  popupContent?: string;
+  /** Whether to show distance labels on polylines */
+  showDistance?: boolean;
+  /** Distance unit for calculations */
+  distanceUnit?: 'nautical' | 'metric' | 'imperial';
+  /** Custom marker icon */
+  icon?: L.Icon;
 }
 ```
 
----
+## Event Types
 
-### Page
+### MapClickEvent
 
-Interface genérica para respostas paginadas.
+Event data for map click interactions during route drawing.
 
 ```typescript
-interface Page<T = unknown> {
-  content: T[]     // Array com os dados da página
-  page: PageInfo   // Informações de paginação
-}
-
-interface PageInfo {
-  size: number           // Tamanho da página
-  number: number         // Número da página atual
-  totalElements: number  // Total de elementos
-  totalPages: number     // Total de páginas
+interface MapClickEvent {
+  /** Clicked coordinates */
+  latlng: L.LatLng;
+  /** Original Leaflet event */
+  originalEvent: MouseEvent;
+  /** Map container point */
+  containerPoint: L.Point;
+  /** Layer point */
+  layerPoint: L.Point;
 }
 ```
 
-**Exemplo:**
+### FileProcessingEvent
+
+Event data for file processing operations.
+
 ```typescript
-const usersPage: Page<User> = {
-  content: [
-    { id: 1, name: "João", email: "joao@email.com" },
-    { id: 2, name: "Maria", email: "maria@email.com" }
-  ],
-  page: {
-    size: 10,
-    number: 0,
-    totalElements: 50,
-    totalPages: 5
-  }
+interface FileProcessingEvent {
+  /** Processed file */
+  file: File;
+  /** Parsed coordinates from file */
+  coordinates?: L.LatLng[];
+  /** Created layer from file */
+  layer?: L.FeatureGroup;
+  /** Processing success status */
+  success: boolean;
+  /** Error message if processing failed */
+  error?: string;
 }
 ```
 
----
+## Utility Function Types
 
-### Token
+### DistanceCalculator
 
-Interfaces para estrutura de tokens JWT.
+Function type for calculating distances between points.
 
 ```typescript
-interface Token {
-  header: Header      // Cabeçalho do token
-  payload: Payload    // Dados do token
-  signature: string   // Assinatura
-}
+type DistanceCalculator = (
+  from: L.LatLng, 
+  to: L.LatLng, 
+  unit?: 'nautical' | 'metric' | 'imperial'
+) => number;
+```
 
-interface Header {
-  alg: string  // Algoritmo (ex: "HS256")
-  typ: string  // Tipo (ex: "JWT")
-}
+### CoordinateParser
 
-interface Payload {
-  jti: string   // ID único do token
-  iss: string   // Emissor
-  iat: number   // Data de emissão (timestamp Unix)
-  nbf: number   // Não válido antes de (timestamp Unix)
-  exp: number   // Data de expiração (timestamp Unix)
-  sub: string   // Subject (ID do usuário)
-  aud: string   // Audiência
+Function type for parsing coordinate strings.
+
+```typescript
+type CoordinateParser = (
+  coordinateString: string
+) => L.LatLng | null;
+```
+
+### FileNameParser
+
+Function type for parsing georeferenced image filenames.
+
+```typescript
+type FileNameParser = (
+  filename: string
+) => {
+  southwest: L.LatLng;
+  northeast: L.LatLng;
+} | null;
+```
+
+## Extended Leaflet Types
+
+### Enhanced FeatureGroup
+
+Extended FeatureGroup with additional metadata.
+
+```typescript
+interface EnhancedFeatureGroup extends L.FeatureGroup {
+  /** Metadata about the layer */
+  metadata?: {
+    /** Layer type identifier */
+    type: 'markers' | 'polyline' | 'polygon' | 'overlay';
+    /** Creation timestamp */
+    created: Date;
+    /** Source information */
+    source?: 'file' | 'drawing' | 'manual';
+    /** Original filename if created from file */
+    filename?: string;
+  };
 }
 ```
 
-**Exemplo:**
-```typescript
-const payload: Payload = {
-  jti: "unique-token-id",
-  iss: "https://auth.exemplo.com",
-  iat: 1674567890,  // Timestamp Unix
-  nbf: 1674567890,
-  exp: 1674654290,  // 24h depois
-  sub: "user123",
-  aud: "https://api.exemplo.com"
-}
+## Usage Examples
 
-// Verificar se token está expirado
-const isExpired = payload.exp * 1000 < Date.now()
+### Component with Full Type Safety
+
+```tsx
+import React from 'react';
+import { Card, useMap } from '@forgepack/leaflet';
+import type { CardProps, UseMapReturn } from '@forgepack/leaflet';
+
+const LayerManager: React.FC = () => {
+  const { map, layers, toggleFromMap }: UseMapReturn = useMap();
+
+  const cardProps: CardProps = {
+    map,
+    layers,
+    toggleFromMap
+  };
+
+  return <Card {...cardProps} />;
+};
 ```
 
----
+### File Processing with Types
 
-### AuthContextType
+```tsx
+import React from 'react';
+import { HandleInputFile } from '@forgepack/leaflet';
+import type { InputProps } from '@forgepack/leaflet';
 
-Interface do contexto de autenticação que estende `Auth`.
+const FileUploader: React.FC = () => {
+  const { map, addMarkers, toggleFromMap } = useMap();
 
-```typescript
-interface AuthContextType extends Auth {
-  loginUser: (credentials: any) => Promise<any>  // Função de login
-  logoutUser: () => void                        // Função de logout
-  isAuthenticated: boolean                      // Status de autenticação
-}
-```
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const inputProps: InputProps = {
+      event,
+      map,
+      toggleFromMap,
+      addMarkers
+    };
 
----
+    HandleInputFile(inputProps);
+  };
 
-### ApiClientOptions
-
-Opções para configuração do cliente da API.
-
-```typescript
-type ApiClientOptions = {
-  baseURL: string                    // URL base da API
-  onUnauthorized?: () => void        // Callback para erro 401
-  onForbidden?: () => void          // Callback para erro 403
-}
-```
-
----
-
-## Utilitários de Tipo
-
-### Exemplos de Uso em Componentes
-
-```typescript
-import type { 
-  Auth, 
-  ErrorMessage, 
-  Search, 
-  Page,
-  AuthContextType 
-} from '@forgepack/request'
-
-// Propriedades de componente
-interface UserListProps {
-  searchParams: Search
-  onError: (errors: ErrorMessage[]) => void
-}
-
-// Estado de componente
-interface LoginState {
-  user: Auth | null
-  errors: ErrorMessage[]
-  loading: boolean
-}
-
-// Hook personalizado
-const useUserData = (): {
-  users: Page<User>
-  loading: boolean
-  search: (params: Search) => void
-} => {
-  // implementação
-}
-
-// Contexto tipado
-const useTypedAuth = (): AuthContextType => {
-  return useAuth()
-}
-```
-
-### Generic Types
-
-```typescript
-// Função genérica para CRUD
-const createEntity = async <T>(
-  api: AxiosInstance, 
-  endpoint: string, 
-  data: T
-): Promise<T | ErrorMessage[]> => {
-  // implementação
-}
-
-// Hook genérico para listagem
-const useEntityList = <T>(
-  endpoint: string, 
-  search?: Search
-): {
-  data: Page<T>
-  loading: boolean
-  error: ErrorMessage[]
-} => {
-  // implementação
-}
-```
-
-### Type Guards
-
-```typescript
-// Verificar se é erro
-const isErrorArray = (result: any): result is ErrorMessage[] => {
-  return Array.isArray(result) && 
-         result.length > 0 && 
-         'field' in result[0] && 
-         'message' in result[0]
-}
-
-// Verificar se tem dados
-const hasContent = <T>(page: Page<T>): boolean => {
-  return page.content.length > 0
-}
-
-// Uso
-const result = await createUser(userData)
-
-if (isErrorArray(result)) {
-  // Tratar erros
-  console.error(result)
-} else {
-  // Usuário criado com sucesso
-  console.log(result)
-}
+  return (
+    <input 
+      type="file" 
+      onChange={handleFileChange}
+      accept=".txt,.jpg,.jpeg,.png,.gif"
+    />
+  );
+};
 ```

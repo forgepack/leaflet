@@ -1,354 +1,502 @@
-# Utilities
+# Utilities API Reference
 
 ## Overview
 
-Utility functions and helpers for working with @forgepack/leaflet components.
+The utilities module provides helper functions for coordinate processing, distance calculations, and file parsing used throughout the @forgepack/leaflet package.
+
+## Distance Calculations
+
+### calculateDistance
+
+Calculate the distance between two geographic points.
+
+```typescript
+function calculateDistance(
+  from: L.LatLng, 
+  to: L.LatLng, 
+  unit: 'nautical' | 'metric' | 'imperial' = 'nautical'
+): number
+```
+
+#### Parameters
+
+- `from`: Starting coordinate point
+- `to`: Ending coordinate point  
+- `unit`: Distance unit (default: 'nautical')
+
+#### Returns
+
+Distance as a number in the specified unit.
+
+#### Usage
+
+```typescript
+import * as L from 'leaflet'
+import { calculateDistance } from '@forgepack/leaflet/utils'
+
+const point1 = L.latLng(-22.8156, -43.1078) // Christ the Redeemer
+const point2 = L.latLng(-22.9068, -43.1729) // Copacabana Beach
+
+const distanceNM = calculateDistance(point1, point2, 'nautical')
+const distanceKM = calculateDistance(point1, point2, 'metric')
+const distanceMI = calculateDistance(point1, point2, 'imperial')
+
+console.log(`Distance: ${distanceNM.toFixed(2)} nautical miles`)
+console.log(`Distance: ${distanceKM.toFixed(2)} kilometers`)
+console.log(`Distance: ${distanceMI.toFixed(2)} miles`)
+```
+
+### calculateRouteDistance
+
+Calculate the total distance for a multi-point route.
+
+```typescript
+function calculateRouteDistance(
+  points: L.LatLng[], 
+  unit: 'nautical' | 'metric' | 'imperial' = 'nautical'
+): number
+```
+
+#### Parameters
+
+- `points`: Array of coordinate points defining the route
+- `unit`: Distance unit (default: 'nautical')
+
+#### Returns
+
+Total route distance as a number.
+
+#### Usage
+
+```typescript
+import * as L from 'leaflet'
+import { calculateRouteDistance } from '@forgepack/leaflet/utils'
+
+const route = [
+  L.latLng(-22.8156, -43.1078),
+  L.latLng(-22.9068, -43.1729),
+  L.latLng(-22.9035, -43.2096)
+]
+
+const totalDistance = calculateRouteDistance(route, 'nautical')
+console.log(`Total route distance: ${totalDistance.toFixed(2)} NM`)
+```
+
+## Coordinate Processing
+
+### parseCoordinates
+
+Parse coordinate strings from text files.
+
+```typescript
+function parseCoordinates(text: string): L.LatLng[]
+```
+
+#### Parameters
+
+- `text`: Raw text content containing coordinate data
+
+#### Returns
+
+Array of parsed L.LatLng objects.
+
+#### Supported Formats
+
+- Space-separated: `latitude longitude`
+- Comma-separated: `latitude,longitude`
+- Tab-separated: `latitude    longitude`
+
+#### Usage
+
+```typescript
+import { parseCoordinates } from '@forgepack/leaflet/utils'
+
+const coordinateText = `
+-22.8156 -43.1078
+-22.9068 -43.1729
+-22.9035 -43.2096
+`
+
+const points = parseCoordinates(coordinateText)
+console.log(`Parsed ${points.length} coordinate points`)
+```
+
+### formatCoordinates
+
+Format coordinates for display or export.
+
+```typescript
+function formatCoordinates(
+  point: L.LatLng, 
+  format: 'decimal' | 'dms' | 'ddm' = 'decimal',
+  precision: number = 6
+): string
+```
+
+#### Parameters
+
+- `point`: Coordinate point to format
+- `format`: Output format (decimal degrees, degrees-minutes-seconds, degrees-decimal-minutes)
+- `precision`: Decimal places for decimal format
+
+#### Returns
+
+Formatted coordinate string.
+
+#### Usage
+
+```typescript
+import * as L from 'leaflet'
+import { formatCoordinates } from '@forgepack/leaflet/utils'
+
+const point = L.latLng(-22.8156, -43.1078)
+
+console.log(formatCoordinates(point, 'decimal', 4))  // "-22.8156, -43.1078"
+console.log(formatCoordinates(point, 'dms'))         // "22°48'56.2\"S, 43°06'28.1\"W"  
+console.log(formatCoordinates(point, 'ddm'))         // "22°48.936'S, 43°06.468'W"
+```
 
 ## File Processing
 
-## Functions
+### parseImageFileName
 
-### isValidToken
-
-Validates if a JWT token is valid and not expired.
+Parse georeferenced image filenames to extract boundary coordinates.
 
 ```typescript
-function isValidToken(token: string): boolean
+function parseImageFileName(filename: string): {
+  southwest: L.LatLng;
+  northeast: L.LatLng;
+} | null
 ```
 
-**Parameters:**
-- `token` (string): JWT token to validate
+#### Parameters
 
-**Returns:**
-- `boolean`: `true` if token is valid and not expired, `false` otherwise
+- `filename`: Image filename following the pattern `swLat_swLng_neLat_neLng.ext`
 
-**Example:**
+#### Returns
+
+Object with southwest and northeast coordinates, or null if parsing fails.
+
+#### Usage
+
 ```typescript
-import { isValidToken } from '@forgepack/request'
+import { parseImageFileName } from '@forgepack/leaflet/utils'
 
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-const valid = isValidToken(token)
+const filename = "-23.0_-43.5_-22.5_-43.0.jpg"
+const bounds = parseImageFileName(filename)
 
-if (valid) {
-  console.log('Token is valid')
-} else {
-  console.log('Token is expired or invalid')
+if (bounds) {
+  console.log('Southwest:', bounds.southwest)
+  console.log('Northeast:', bounds.northeast)
 }
 ```
 
----
+### validateFileType
 
-### decodeToken
-
-Decodes a JWT token and returns its payload.
+Validate if a file is supported for processing.
 
 ```typescript
-function decodeToken<T = any>(token: string): T | null
-```
-
-**Parameters:**
-- `token` (string): JWT token to decode
-
-**Returns:**
-- `T | null`: Decoded payload or null if invalid
-
-**Example:**
-```typescript
-import { decodeToken } from '@forgepack/request'
-
-interface TokenPayload {
-  sub: string
-  roles: string[]
-  exp: number
-}
-
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-const payload = decodeToken<TokenPayload>(token)
-
-if (payload) {
-  console.log('User ID:', payload.sub)
-  console.log('Roles:', payload.roles)
-  console.log('Expires at:', new Date(payload.exp * 1000))
+function validateFileType(file: File): {
+  isValid: boolean;
+  type: 'coordinates' | 'image' | 'unknown';
+  message?: string;
 }
 ```
 
----
+#### Parameters
 
-### formatTokenExpiration
+- `file`: File object to validate
 
-Formats token expiration time to a human-readable string.
+#### Returns
 
-```typescript
-function formatTokenExpiration(token: string): string | null
-```
+Validation result with type information.
 
-**Parameters:**
-- `token` (string): JWT token
-
-**Returns:**
-- `string | null`: Formatted expiration time or null if invalid
-
-**Example:**
-```typescript
-import { formatTokenExpiration } from '@forgepack/request'
-
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-const expiration = formatTokenExpiration(token)
-
-console.log('Token expires:', expiration) // "2024-12-31 23:59:59"
-```
-
----
-
-### createApiClient
-
-Factory function to create a configured Axios instance with interceptors.
+#### Usage
 
 ```typescript
-function createApiClient(config: ApiClientConfig): AxiosInstance
-```
+import { validateFileType } from '@forgepack/leaflet/utils'
 
-**Parameters:**
-- `config` (ApiClientConfig): Configuration object
-
-**ApiClientConfig Interface:**
-```typescript
-interface ApiClientConfig {
-  baseURL: string
-  timeout?: number
-  onUnauthorized?: () => void
-  onForbidden?: () => void
-  onError?: (error: any) => void
-}
-```
-
-**Returns:**
-- `AxiosInstance`: Configured Axios instance
-
-**Example:**
-```typescript
-import { createApiClient } from '@forgepack/request'
-
-const api = createApiClient({
-  baseURL: 'https://api.example.com',
-  timeout: 5000,
-  onUnauthorized: () => {
-    // Redirect to login
-    window.location.href = '/login'
-  },
-  onForbidden: () => {
-    // Show access denied message
-    alert('Access denied')
-  },
-  onError: (error) => {
-    // Log error
-    console.error('API Error:', error)
-  }
-})
-```
-
----
-
-### getTokenFromStorage
-
-Retrieves authentication token from localStorage.
-
-```typescript
-function getTokenFromStorage(): string | null
-```
-
-**Returns:**
-- `string | null`: Token from storage or null if not found
-
-**Example:**
-```typescript
-import { getTokenFromStorage } from '@forgepack/request'
-
-const token = getTokenFromStorage()
-if (token) {
-  console.log('Token found:', token)
-} else {
-  console.log('No token in storage')
-}
-```
-
----
-
-### setTokenToStorage
-
-Stores authentication token in localStorage.
-
-```typescript
-function setTokenToStorage(token: string): void
-```
-
-**Parameters:**
-- `token` (string): Token to store
-
-**Example:**
-```typescript
-import { setTokenToStorage } from '@forgepack/request'
-
-const newToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-setTokenToStorage(newToken)
-console.log('Token stored successfully')
-```
-
----
-
-### clearTokenFromStorage
-
-Removes authentication token from localStorage.
-
-```typescript
-function clearTokenFromStorage(): void
-```
-
-**Example:**
-```typescript
-import { clearTokenFromStorage } from '@forgepack/request'
-
-clearTokenFromStorage()
-console.log('Token cleared from storage')
-```
-
----
-
-### hasRole
-
-Checks if user has a specific role.
-
-```typescript
-function hasRole(userRoles: string[], requiredRole: string): boolean
-```
-
-**Parameters:**
-- `userRoles` (string[]): Array of user roles
-- `requiredRole` (string): Role to check
-
-**Returns:**
-- `boolean`: `true` if user has the role, `false` otherwise
-
-**Example:**
-```typescript
-import { hasRole } from '@forgepack/request'
-
-const userRoles = ['USER', 'ADMIN']
-const isAdmin = hasRole(userRoles, 'ADMIN') // true
-const isManager = hasRole(userRoles, 'MANAGER') // false
-
-if (isAdmin) {
-  console.log('User is admin')
-}
-```
-
----
-
-### hasAnyRole
-
-Checks if user has any of the specified roles.
-
-```typescript
-function hasAnyRole(userRoles: string[], requiredRoles: string[]): boolean
-```
-
-**Parameters:**
-- `userRoles` (string[]): Array of user roles
-- `requiredRoles` (string[]): Array of roles to check
-
-**Returns:**
-- `boolean`: `true` if user has any of the roles, `false` otherwise
-
-**Example:**
-```typescript
-import { hasAnyRole } from '@forgepack/request'
-
-const userRoles = ['USER']
-const canAccess = hasAnyRole(userRoles, ['ADMIN', 'MANAGER']) // false
-const canView = hasAnyRole(userRoles, ['USER', 'GUEST']) // true
-
-if (canView) {
-  console.log('User can view content')
-}
-```
-
-## Constants
-
-### DEFAULT_PAGE_SIZE
-
-Default page size for pagination.
-
-```typescript
-const DEFAULT_PAGE_SIZE = 10
-```
-
-### TOKEN_STORAGE_KEY
-
-Key used to store tokens in localStorage.
-
-```typescript
-const TOKEN_STORAGE_KEY = '@forgepack/request:token'
-```
-
-### REFRESH_TOKEN_STORAGE_KEY
-
-Key used to store refresh tokens in localStorage.
-
-```typescript
-const REFRESH_TOKEN_STORAGE_KEY = '@forgepack/request:refresh-token'
-```
-
-## Usage Examples
-
-### Custom Hook with Utilities
-
-```typescript
-// src/hooks/useTokenValidation.ts
-import { useState, useEffect } from 'react'
-import { isValidToken, getTokenFromStorage } from '@forgepack/request'
-
-export const useTokenValidation = () => {
-  const [isValid, setIsValid] = useState(false)
-
-  useEffect(() => {
-    const token = getTokenFromStorage()
-    const valid = token ? isValidToken(token) : false
-    setIsValid(valid)
-  }, [])
-
-  return isValid
-}
-```
-
-### Role-Based Component
-
-```typescript
-// src/components/RoleGuard.tsx
-import React from 'react'
-import { useAuth, hasRole } from '@forgepack/request'
-
-interface RoleGuardProps {
-  requiredRole: string
-  children: React.ReactNode
-  fallback?: React.ReactNode
-}
-
-export const RoleGuard: React.FC<RoleGuardProps> = ({
-  requiredRole,
-  children,
-  fallback = <div>Access denied</div>
-}) => {
-  const { role } = useAuth()
+const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const files = event.target.files
   
-  if (!hasRole(role, requiredRole)) {
-    return <>{fallback}</>
+  if (files) {
+    Array.from(files).forEach(file => {
+      const validation = validateFileType(file)
+      
+      if (validation.isValid) {
+        console.log(`File ${file.name} is a valid ${validation.type} file`)
+      } else {
+        console.warn(`File ${file.name} is not supported: ${validation.message}`)
+      }
+    })
   }
-  
-  return <>{children}</>
 }
+```
 
-// Usage
-<RoleGuard requiredRole="ADMIN">
-  <AdminPanel />
-</RoleGuard>
+## Layer Utilities
+
+### createCustomMarker
+
+Create a custom marker with enhanced styling.
+
+```typescript
+function createCustomMarker(
+  position: L.LatLng,
+  options?: {
+    icon?: L.Icon;
+    popup?: string;
+    color?: string;
+    size?: 'small' | 'medium' | 'large';
+  }
+): L.Marker
+```
+
+#### Parameters
+
+- `position`: Marker position coordinates
+- `options`: Optional styling and content options
+
+#### Returns
+
+Configured L.Marker instance.
+
+#### Usage
+
+```typescript
+import * as L from 'leaflet'
+import { createCustomMarker } from '@forgepack/leaflet/utils'
+
+const marker = createCustomMarker(
+  L.latLng(-22.8156, -43.1078),
+  {
+    popup: 'Christ the Redeemer',
+    color: '#ff0000',
+    size: 'large'
+  }
+)
+```
+
+### createDistanceLabel
+
+Create distance label markers for routes.
+
+```typescript
+function createDistanceLabel(
+  position: L.LatLng,
+  distance: number,
+  unit: string = 'NM'
+): L.Marker
+```
+
+#### Parameters
+
+- `position`: Label position coordinates
+- `distance`: Distance value to display
+- `unit`: Distance unit abbreviation
+
+#### Returns
+
+Distance label marker.
+
+#### Usage
+
+```typescript
+import * as L from 'leaflet'
+import { createDistanceLabel } from '@forgepack/leaflet/utils'
+
+const label = createDistanceLabel(
+  L.latLng(-22.8500, -43.1400),
+  5.2,
+  'NM'
+)
+```
+
+## Geometry Utilities
+
+### calculateMidpoint
+
+Calculate the midpoint between two coordinates.
+
+```typescript
+function calculateMidpoint(point1: L.LatLng, point2: L.LatLng): L.LatLng
+```
+
+#### Parameters
+
+- `point1`: First coordinate point
+- `point2`: Second coordinate point
+
+#### Returns
+
+Midpoint coordinates.
+
+#### Usage
+
+```typescript
+import * as L from 'leaflet'
+import { calculateMidpoint } from '@forgepack/leaflet/utils'
+
+const start = L.latLng(-22.8156, -43.1078)
+const end = L.latLng(-22.9068, -43.1729)
+const midpoint = calculateMidpoint(start, end)
+
+console.log('Midpoint:', midpoint)
+```
+
+### calculateBearing
+
+Calculate the bearing (direction) from one point to another.
+
+```typescript
+function calculateBearing(from: L.LatLng, to: L.LatLng): number
+```
+
+#### Parameters
+
+- `from`: Starting point
+- `to`: Destination point
+
+#### Returns
+
+Bearing in degrees (0-360).
+
+#### Usage
+
+```typescript
+import * as L from 'leaflet'
+import { calculateBearing } from '@forgepack/leaflet/utils'
+
+const from = L.latLng(-22.8156, -43.1078)
+const to = L.latLng(-22.9068, -43.1729)
+const bearing = calculateBearing(from, to)
+
+console.log(`Bearing: ${bearing.toFixed(1)}°`)
+```
+
+## Validation Utilities
+
+### isValidCoordinate
+
+Validate if coordinates are within valid geographic bounds.
+
+```typescript
+function isValidCoordinate(lat: number, lng: number): boolean
+```
+
+#### Parameters
+
+- `lat`: Latitude value
+- `lng`: Longitude value
+
+#### Returns
+
+Boolean indicating if coordinates are valid.
+
+#### Usage
+
+```typescript
+import { isValidCoordinate } from '@forgepack/leaflet/utils'
+
+console.log(isValidCoordinate(-22.8156, -43.1078))  // true
+console.log(isValidCoordinate(95, 200))             // false
+```
+
+### sanitizeCoordinates
+
+Clean and validate coordinate arrays, removing invalid points.
+
+```typescript
+function sanitizeCoordinates(points: L.LatLng[]): L.LatLng[]
+```
+
+#### Parameters
+
+- `points`: Array of coordinate points to sanitize
+
+#### Returns
+
+Array of valid coordinate points.
+
+#### Usage
+
+```typescript
+import * as L from 'leaflet'
+import { sanitizeCoordinates } from '@forgepack/leaflet/utils'
+
+const mixedPoints = [
+  L.latLng(-22.8156, -43.1078),  // Valid
+  L.latLng(95, 200),             // Invalid
+  L.latLng(-22.9068, -43.1729),  // Valid
+]
+
+const cleanPoints = sanitizeCoordinates(mixedPoints)
+console.log(`Cleaned ${mixedPoints.length} to ${cleanPoints.length} valid points`)
+```
+
+## Performance Utilities
+
+### debounce
+
+Debounce function calls to improve performance during rapid interactions.
+
+```typescript
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void
+```
+
+#### Parameters
+
+- `func`: Function to debounce
+- `wait`: Delay in milliseconds
+
+#### Returns
+
+Debounced function.
+
+#### Usage
+
+```typescript
+import { debounce } from '@forgepack/leaflet/utils'
+
+const handleMapClick = debounce((event: L.LeafletMouseEvent) => {
+  console.log('Map clicked at:', event.latlng)
+}, 300)
+
+// Use with map events
+map.on('click', handleMapClick)
+```
+
+### throttle
+
+Throttle function calls to limit execution frequency.
+
+```typescript
+function throttle<T extends (...args: any[]) => any>(
+  func: T,
+  limit: number
+): (...args: Parameters<T>) => void
+```
+
+#### Parameters
+
+- `func`: Function to throttle
+- `limit`: Minimum time between executions in milliseconds
+
+#### Returns
+
+Throttled function.
+
+#### Usage
+
+```typescript
+import { throttle } from '@forgepack/leaflet/utils'
+
+const handleMapMove = throttle(() => {
+  console.log('Map moved')
+}, 100)
+
+// Use with map events
+map.on('move', handleMapMove)
 ```

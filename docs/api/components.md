@@ -4,181 +4,46 @@
 
 The components module provides React components for interactive map visualization and layer management using Leaflet.
 
-## AuthProvider
+## Map
 
-Context provider that manages authentication state throughout the application.
-
-### Props
-
-```typescript
-interface AuthProviderProps {
-  api: AxiosInstance        // Axios instance for API calls
-  children: React.ReactNode // Child components
-  onLogin?: () => void      // Optional callback after successful login
-  onLogout?: () => void     // Optional callback after logout
-}
-```
+Main map component that orchestrates all map-related functionality.
 
 ### Usage
 
 ```tsx
 import React from 'react'
-import { AuthProvider, createApiClient } from '@forgepack/request'
-import { App } from './App'
-
-const api = createApiClient({
-  baseURL: 'https://api.example.com'
-})
-
-function Root() {
-  return (
-    <AuthProvider 
-      api={api}
-      onLogin={() => console.log('User logged in')}
-      onLogout={() => console.log('User logged out')}
-    >
-      <App />
-    </AuthProvider>
-  )
-}
-```
-
-### Context Value
-
-The AuthProvider provides the following context value:
-
-```typescript
-interface AuthContextValue {
-  accessToken: string | null
-  refreshToken: string | null
-  tokenType: string
-  role: string[]
-  isAuthenticated: boolean
-  loginUser: (credentials: LoginCredentials) => Promise<LoginResponse>
-  logoutUser: () => void
-  updateAuth: (auth: Auth) => void
-}
-```
-
----
-
-## ProtectedRoute
-
-Component that protects routes based on authentication and roles.
-
-### Props
-
-```typescript
-interface ProtectedRouteProps {
-  children: React.ReactNode
-  requiredRoles?: string[]     // Optional roles required
-  fallback?: React.ReactNode   // Component to show when access denied
-  redirectTo?: string          // Path to redirect when unauthorized
-}
-```
-
-### Basic Usage
-
-```tsx
-import React from 'react'
-import { ProtectedRoute } from '@forgepack/request'
-import { AdminDashboard } from './components/AdminDashboard'
+import { Map } from '@forgepack/leaflet'
 
 function App() {
   return (
-    <ProtectedRoute>
-      <AdminDashboard />
-    </ProtectedRoute>
-  )
-}
-```
-
-### Role-Based Protection
-
-```tsx
-import React from 'react'
-import { ProtectedRoute } from '@forgepack/request'
-import { AdminPanel } from './components/AdminPanel'
-
-function AdminRoute() {
-  return (
-    <ProtectedRoute 
-      requiredRoles={['ADMIN']}
-      fallback={<div>You need admin privileges to access this page.</div>}
-    >
-      <AdminPanel />
-    </ProtectedRoute>
-  )
-}
-```
-
-### Multiple Roles
-
-```tsx
-import React from 'react'
-import { ProtectedRoute } from '@forgepack/request'
-import { ManagementPanel } from './components/ManagementPanel'
-
-function ManagementRoute() {
-  return (
-    <ProtectedRoute 
-      requiredRoles={['ADMIN', 'MANAGER']}
-      redirectTo="/access-denied"
-    >
-      <ManagementPanel />
-    </ProtectedRoute>
-  )
-}
-```
-
----
-
-## LoadingSpinner
-
-Reusable loading spinner component.
-
-### Props
-
-```typescript
-interface LoadingSpinnerProps {
-  size?: 'small' | 'medium' | 'large'
-  color?: string
-  message?: string
-}
-```
-
-### Usage
-
-```tsx
-import React from 'react'
-import { LoadingSpinner } from '@forgepack/request'
-
-function MyComponent() {
-  return (
-    <div>
-      <LoadingSpinner 
-        size="medium" 
-        color="#007bff"
-        message="Loading data..."
-      />
+    <div style={{ height: '100vh', width: '100vw' }}>
+      <Map />
     </div>
   )
 }
 ```
 
+### Features
+
+- Renders the map container
+- Integrates the map hook for map management  
+- Displays layer management cards
+- Shows the control menu
+- Handles route drawing with visual feedback
+
 ---
 
-## ErrorBoundary
+## Card
 
-Error boundary component for handling React errors gracefully.
+Card component for displaying and managing map layers with visual interface for layer management.
 
 ### Props
 
 ```typescript
-interface ErrorBoundaryProps {
-  children: React.ReactNode
-  fallback?: React.ComponentType<{ error: Error; reset: () => void }>
-  onError?: (error: Error, errorInfo: ErrorInfo) => void
+interface CardProps {
+  map: L.Map           // The Leaflet map instance
+  layers: L.Layer[]    // Array of map layers to display in cards
+  toggleFromMap: (feature: L.Layer) => void  // Function to toggle layer visibility
 }
 ```
 
@@ -186,204 +51,144 @@ interface ErrorBoundaryProps {
 
 ```tsx
 import React from 'react'
-import { ErrorBoundary } from '@forgepack/request'
-import { App } from './App'
+import { Card, useMap } from '@forgepack/leaflet'
 
-function Root() {
+function LayerManager() {
+  const { map, layers, toggleFromMap } = useMap()
+  
   return (
-    <ErrorBoundary
-      onError={(error, errorInfo) => {
-        console.error('Application error:', error)
-        // Send to error tracking service
-      }}
-    >
-      <App />
-    </ErrorBoundary>
+    <Card 
+      map={map}
+      layers={layers}
+      toggleFromMap={toggleFromMap}
+    />
   )
 }
 ```
 
-### Custom Fallback
+### Features
 
-```tsx
-import React from 'react'
-import { ErrorBoundary } from '@forgepack/request'
-
-const ErrorFallback = ({ error, reset }) => (
-  <div className="error-fallback">
-    <h2>Something went wrong</h2>
-    <pre>{error.message}</pre>
-    <button onClick={reset}>Try again</button>
-  </div>
-)
-
-function App() {
-  return (
-    <ErrorBoundary fallback={ErrorFallback}>
-      <MyComponent />
-    </ErrorBoundary>
-  )
-}
-```
+- Visual representation of active map layers
+- Remove functionality for individual layers
+- Automatic layer card generation
+- Integrated with map layer management
 
 ---
 
-## AuthGuard
+## Menu
 
-Higher-order component for protecting components based on authentication.
+Menu component providing controls for map interaction and route drawing functionality.
+
+### Props
+
+```typescript
+interface MenuProps {
+  startDrawingRoute: () => void     // Function to start interactive route drawing
+  finishDrawingRoute: () => void    // Function to complete route drawing
+  cancelDrawingRoute: () => void    // Function to cancel route drawing
+  isDrawingRoute: boolean           // Whether route drawing mode is active
+}
+```
 
 ### Usage
 
 ```tsx
 import React from 'react'
-import { AuthGuard } from '@forgepack/request'
+import { Menu, useMap } from '@forgepack/leaflet'
 
-const Dashboard = () => <div>Dashboard Content</div>
-
-// Protect component
-const ProtectedDashboard = AuthGuard(Dashboard)
-
-// With options
-const AdminDashboard = AuthGuard(Dashboard, {
-  requiredRoles: ['ADMIN'],
-  fallback: <div>Access denied</div>
-})
+function MapControls() {
+  const { 
+    startDrawingRoute, 
+    finishDrawingRoute, 
+    cancelDrawingRoute, 
+    isDrawingRoute 
+  } = useMap()
+  
+  return (
+    <Menu 
+      startDrawingRoute={startDrawingRoute}
+      finishDrawingRoute={finishDrawingRoute}
+      cancelDrawingRoute={cancelDrawingRoute}
+      isDrawingRoute={isDrawingRoute}
+    />
+  )
+}
 ```
+
+### Features
+
+- Interactive route drawing controls
+- Start/finish/cancel route drawing modes
+- Visual feedback for drawing state
+- Integration with map interaction
 
 ---
 
-## Complete Example: App with All Components
+## HandleInputFile
+
+Utility function for processing coordinate files and creating map layers from uploaded files.
+
+### Props
+
+```typescript
+interface InputProps {
+  event: ChangeEvent<HTMLInputElement>                          // File input change event
+  map: L.Map                                                    // Leaflet map instance
+  toggleFromMap: (feature: L.FeatureGroup) => void            // Function to add/remove layers
+  addMarkers?: (points: L.LatLng[]) => L.FeatureGroup         // Optional marker creation function
+  addPolygon?: (points: L.LatLng[]) => L.FeatureGroup         // Optional polygon creation function
+  addPolyline?: (points: L.LatLng[]) => L.FeatureGroup        // Optional polyline creation function
+  addOverlay?: (sw: L.LatLngExpression, ne: L.LatLngExpression, file: File) => L.FeatureGroup  // Optional overlay function
+}
+```
+
+### Usage
 
 ```tsx
-// src/App.tsx
 import React from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { 
-  AuthProvider, 
-  ProtectedRoute, 
-  ErrorBoundary,
-  createApiClient 
-} from '@forgepack/request'
+import { HandleInputFile, useMap } from '@forgepack/leaflet'
 
-// Pages
-import { LoginPage } from './pages/LoginPage'
-import { DashboardPage } from './pages/DashboardPage'
-import { AdminPage } from './pages/AdminPage'
-import { ProfilePage } from './pages/ProfilePage'
+function FileUploader() {
+  const { 
+    map, 
+    addMarkers, 
+    addPolyline, 
+    addPolygon, 
+    addOverlay, 
+    toggleFromMap 
+  } = useMap()
 
-// Create API client
-const api = createApiClient({
-  baseURL: process.env.REACT_APP_API_URL || 'https://api.example.com',
-  onUnauthorized: () => {
-    window.location.href = '/login'
-  },
-  onForbidden: () => {
-    console.warn('Access forbidden')
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    HandleInputFile({
+      event,
+      map,
+      toggleFromMap,
+      addMarkers,
+      addPolyline,
+      addPolygon,
+      addOverlay
+    })
   }
-})
 
-function App() {
   return (
-    <ErrorBoundary>
-      <BrowserRouter>
-        <AuthProvider api={api}>
-          <Routes>
-            {/* Public route */}
-            <Route path="/login" element={<LoginPage />} />
-            
-            {/* Protected routes */}
-            <Route 
-              path="/dashboard" 
-              element={
-                <ProtectedRoute>
-                  <DashboardPage />
-                </ProtectedRoute>
-              } 
-            />
-            
-            <Route 
-              path="/profile" 
-              element={
-                <ProtectedRoute>
-                  <ProfilePage />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Admin only route */}
-            <Route 
-              path="/admin" 
-              element={
-                <ProtectedRoute 
-                  requiredRoles={['ADMIN']}
-                  fallback={<div>You need admin privileges</div>}
-                >
-                  <AdminPage />
-                </ProtectedRoute>
-              } 
-            />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </ErrorBoundary>
+    <input 
+      type="file" 
+      onChange={handleFileChange}
+      accept=".txt,.jpg,.jpeg,.png,.gif"
+      multiple
+    />
   )
 }
-
-export default App
 ```
 
-## Component Styling
+### Supported File Types
 
-### Default CSS Classes
+1. **Image overlays**: Files named with pattern "swLat_swLng_neLat_neLng.ext" are treated as georeferenced images
+2. **Coordinate files**: Text files containing lat/lng coordinates (space-separated, one per line)
 
-The package provides default CSS classes that you can customize:
+### Features
 
-```css
-/* Loading Spinner */
-.forgepack-spinner {
-  display: inline-block;
-  width: 40px;
-  height: 40px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #007bff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Error Boundary */
-.forgepack-error-boundary {
-  padding: 20px;
-  border: 1px solid #dc3545;
-  border-radius: 4px;
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-/* Protected Route Fallback */
-.forgepack-access-denied {
-  text-align: center;
-  padding: 40px 20px;
-  color: #6c757d;
-}
-```
-
-### Custom Styling
-
-```tsx
-// Custom styled components
-import styled from 'styled-components'
-import { LoadingSpinner as BaseSpinner } from '@forgepack/request'
-
-const CustomSpinner = styled(BaseSpinner)`
-  .forgepack-spinner {
-    border-top-color: #28a745;
-    width: 60px;
-    height: 60px;
-  }
-`
-```
+- Automatic file type detection
+- Georeferenced image overlay support
+- Coordinate file parsing for markers, polygons, and polylines
+- Integration with map layer management

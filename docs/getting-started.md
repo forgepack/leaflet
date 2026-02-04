@@ -31,73 +31,147 @@ npm install --save-dev @types/leaflet
 
 Start with the simplest implementation:
 
-```typescript
-// src/api.ts
-import { createApiClient } from "@forgepack/request"
-
-export const api = createApiClient({
-  baseURL: "https://api.service.com",
-  /** Called on 401 errors (expired token) */
-  onUnauthorized: () => window.location.href = "/login",
-  /** Called on 403 errors (without permission) */
-  onForbidden: () => window.location.href = "/notAllowed"
-})
-```
-
-### 2. Authentication Provider
-
-Configure the `AuthProvider` at the root of your application:
-
 ```tsx
 // src/App.tsx
 import React from 'react'
-import { BrowserRouter } from 'react-router-dom'
-import { AuthProvider } from '@forgepack/request'
-import { api } from './api'
-import { AppRoutes } from './routes'
+import { Map } from '@forgepack/leaflet'
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider api={api}>
-        <AppRoutes />
-      </AuthProvider>
-    </BrowserRouter>
+    <div style={{ height: '100vh', width: '100vw' }}>
+      <Map />
+    </div>
   )
 }
 
 export default App
 ```
 
-### 3. Configuration for Next.js
+### 2. Using the Map Hook
+
+For more control over the map functionality:
 
 ```tsx
-// pages/_app.tsx
-import type { AppProps } from 'next/app'
-import { AuthProvider, createApiClient } from '@forgepack/request'
+// src/MapComponent.tsx
+import React, { useEffect } from 'react'
+import { useMap } from '@forgepack/leaflet'
+import * as L from 'leaflet'
 
-const api = createApiClient({
-  baseURL: process.env.NEXT_PUBLIC_API_URL!,
-  onUnauthorized: () => {
-    window.location.href = "/login"
-  }
-})
+function MapComponent() {
+  const { 
+    map, 
+    layers, 
+    addMarkers, 
+    addPolyline, 
+    toggleFromMap,
+    startDrawingRoute,
+    finishDrawingRoute 
+  } = useMap()
 
-export default function App({ Component, pageProps }: AppProps) {
+  useEffect(() => {
+    if (map) {
+      // Add some initial markers
+      const points = [
+        L.latLng(-22.8156, -43.1078),
+        L.latLng(-22.9068, -43.1729)
+      ]
+      const markerLayer = addMarkers(points)
+      toggleFromMap(markerLayer)
+    }
+  }, [map])
+
   return (
-    <AuthProvider api={api}>
-      <Component {...pageProps} />
-    </AuthProvider>
+    <div style={{ height: '500px', position: 'relative' }}>
+      {/* Map will be rendered here by the hook */}
+    </div>
+  )
+}
+
+export default MapComponent
+```
+
+### 3. File Input for Coordinate Data
+
+Handle coordinate files and image overlays:
+
+```tsx
+// src/FileHandler.tsx
+import React from 'react'
+import { HandleInputFile } from '@forgepack/leaflet'
+import { useMap } from '@forgepack/leaflet'
+
+function FileHandler() {
+  const { 
+    map, 
+    addMarkers, 
+    addPolyline, 
+    addPolygon, 
+    addOverlay, 
+    toggleFromMap 
+  } = useMap()
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (map) {
+      HandleInputFile({
+        event,
+        map,
+        toggleFromMap,
+        addMarkers,
+        addPolyline,
+        addPolygon,
+        addOverlay
+      })
+    }
+  }
+
+  return (
+    <input 
+      type="file" 
+      onChange={handleFileChange}
+      accept=".txt,.jpg,.jpeg,.png,.gif"
+      multiple
+    />
   )
 }
 ```
 
-### 4. Configuration for Vite
+### 4. Complete Example with All Components
 
 ```tsx
-// src/main.tsx
+// src/CompleteMap.tsx
 import React from 'react'
-import ReactDOM from 'react-dom/client'
+import { Map, Card, Menu } from '@forgepack/leaflet'
+import { useMap } from '@forgepack/leaflet'
+
+function CompleteMap() {
+  const { 
+    map, 
+    layers, 
+    toggleFromMap,
+    startDrawingRoute,
+    finishDrawingRoute,
+    cancelDrawingRoute,
+    isDrawingRoute 
+  } = useMap()
+
+  return (
+    <div className="map-container">
+      <Map />
+      <Card 
+        map={map} 
+        layers={layers} 
+        toggleFromMap={toggleFromMap} 
+      />
+      <Menu 
+        startDrawingRoute={startDrawingRoute}
+        finishDrawingRoute={finishDrawingRoute}
+        cancelDrawingRoute={cancelDrawingRoute}
+        isDrawingRoute={isDrawingRoute}
+      />
+    </div>
+  )
+}
+```
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider, createApiClient } from '@forgepack/request'
 import App from './App.tsx'
