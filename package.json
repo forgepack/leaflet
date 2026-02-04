@@ -1,6 +1,6 @@
 {
     "name": "@forgepack/leaflet",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "description": "A versatile platform designed for the consolidation of georeferenced data, enabling its use in spatial analysis, monitoring, decision-making, and real-time interdisciplinary applications.",
     "homepage": "https://forgepack.dev/packages/leaflet",
     "bugs": {
