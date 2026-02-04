@@ -54,7 +54,7 @@ For more control over the map functionality:
 ```tsx
 // src/MapComponent.tsx
 import React, { useEffect } from 'react'
-import { useMap } from '@forgepack/leaflet'
+import { Map, useMap } from '@forgepack/leaflet'
 import * as L from 'leaflet'
 
 function MapComponent() {
@@ -82,9 +82,10 @@ function MapComponent() {
 
   return (
     <div style={{ height: '500px', position: 'relative' }}>
-      {/* Map will be rendered here by the hook */}
+      <Map />
     </div>
   )
+}
 }
 
 export default MapComponent
@@ -171,23 +172,49 @@ function CompleteMap() {
     </div>
   )
 }
+
+export default CompleteMap
 ```
-import { BrowserRouter } from 'react-router-dom'
-import { AuthProvider, createApiClient } from '@forgepack/request'
-import App from './App.tsx'
 
-const api = createApiClient({
-  baseURL: import.meta.env.VITE_API_URL,
-  onUnauthorized: () => window.location.href = "/login"
-})
+## 🎨 Styling
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <AuthProvider api={api}>
-        <App />
-      </AuthProvider>
-    </BrowserRouter>
-  </React.StrictMode>,
-)
+The package automatically imports the required CSS files:
+
+```tsx
+// These are imported automatically when you import from '@forgepack/leaflet'
+import "leaflet/dist/leaflet.css"
+import "./styles/card.css"
+import "./styles/index.css"
+import "./styles/map.css"
+import "./styles/menu.css"
+import "./styles/useMap.css"
+```
+
+You can override the default styles by adding your own CSS classes or using CSS modules.
+
+## 🚀 Next Steps
+
+- See the [Components Reference](./reference/components.md) for detailed component documentation
+- Check out [Basic Map Examples](./examples/basic-map.md) for more implementation examples
+- Learn about [Route Planning](./examples/route-planning.md) for interactive drawing features
+- Explore [Image Overlays](./examples/image-overlays.md) for georeferenced image support
+
+## 🔧 Common Issues
+
+### Map not showing
+Ensure Leaflet CSS is properly imported and the map container has a defined height:
+
+```css
+.map-container {
+  height: 400px; /* Required! */
+  width: 100%;
+}
+```
+
+### TypeScript errors
+Make sure to install the Leaflet type definitions:
+
+```bash
+npm install --save-dev @types/leaflet
+```
 ```

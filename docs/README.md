@@ -14,11 +14,11 @@ Complete documentation for the React Leaflet components library for interactive 
 - [Image Overlays](./examples/image-overlays.md)
 
 ### API Reference
-- [Components](./api/components.md)
-- [Hooks](./api/hooks.md)
-- [Services](./api/services.md)
-- [Types](./api/types.md)
-- [Utilities](./api/utilities.md)
+- [Components](./reference/components.md)
+- [Hooks](./reference/hooks.md)
+- [Services](./reference/services.md)
+- [Types](./reference/types.md)
+- [Utilities](./reference/utilities.md)
 
 ## 🚀 Main Features
 
