@@ -12,10 +12,6 @@ Complete documentation for the React Leaflet components library for interactive 
 - [Marker Management](./examples/markers.md)
 - [Route Planning](./examples/route-planning.md)
 - [Image Overlays](./examples/image-overlays.md)
-- [Dashboard](./examples/dashboard.md)
-- [Login Form](./examples/login-form.md)
-- [User Service](./examples/user-service.md)
-- [Users List](./examples/users-list.md)
 
 ### API Reference
 - [Components](./api/components.md)
